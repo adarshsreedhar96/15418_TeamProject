@@ -11,7 +11,9 @@ class threadPool{
     public:
         uint32_t num_of_threads;
         std::atomic<bool> running = true;
-        std::thread *myThreads;
+        //std::thread *myThreads;
+        //std::vector<std::thread> thread_pool;
+        std::unique_ptr<std::thread[]> myThreads;
         //pthread_t *myThreads;
         // fields
         // methods
@@ -24,17 +26,24 @@ class threadPool{
             num_of_threads = numOfThreads;
             // create an array of that many threads
             // think about this later - whether we need to delete it
-            myThreads = (std::thread*)(malloc(sizeof(std::thread) * num_of_threads));
+            //myThreads = (std::thread*)(malloc(sizeof(std::thread) * num_of_threads));
+            //myThreads = new std::thread[num_of_threads];
+            myThreads = std::make_unique<std::thread[]>(num_of_threads);
             //myThreads = (pthread_t*)(malloc(sizeof(pthread_t)*num_of_threads));
             // create the pool
             create_threads();
         }
         void create_threads(){
             for(int i=0;i<num_of_threads;i++){
-                printf("creating thread id: %d\n", i);
+                //printf("creating thread id: %d\n", i);
                 //myThreads[i] =  std::thread(&threadPool::worker, this);
-                myThreads[i] = thread(&execute, this);
-                printf("created thread id: %d\n", i);
+                try{
+                    myThreads[i] = thread(&threadPool::worker, this);
+                    //thread_pool.push_back(thread(&threadPool::worker, this));
+                } catch (const std::exception&)  {
+                    printf("caught here");
+                }
+                //printf("created thread id: %d\n", i);
                 /*
                 int err = pthread_create(&myThreads[i], NULL, &execute, NULL);
                 if (err)
@@ -44,36 +53,26 @@ class threadPool{
                 */
             }
         }
-        void execute()
-        {
-            for(int i = 0; i < 1; i++)
-            {
-                //std::cout<<command<<" :: "<<i<<std::endl;
-                printf("helloworld\n");
-            }
-        }
         void worker(){
-            printf("worker thread\n");
-            for(;;){}
-            /*
             while(running){
-                printf("worker thread\n");
+                //printf("worker thread\n");
                 // keep checking if the queue has any entries left
                 //if(!queue.isEmpty()){
                     // grab a task
                     std::function<void()> task;
                     if (queue.pop_task(task))
                     {
-                        printf("thread got a task\n");
+                        //printf("thread got a task\n");
                         task();
                     }
                 //}
-            }*/
+            }
         }
         void destroy_threads(){
             for (uint32_t i = 0; i < num_of_threads; i++)
             {
                 myThreads[i].join();
+                //thread_pool.at(i).join();
             }
         }
         void submit(const std::function<void()> &task){
@@ -84,8 +83,8 @@ class threadPool{
             printf("dtor\n");
             uint32_t sleep_duration = 1000;
             std::this_thread::sleep_for(std::chrono::microseconds(sleep_duration));
-         running = false;
-            free(this->myThreads);
+            running = false;
+            //free(this->myThreads);
             destroy_threads();
         }
 };

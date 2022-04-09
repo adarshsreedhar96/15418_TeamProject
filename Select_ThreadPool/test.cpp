@@ -1,10 +1,12 @@
 #include "threadpool.h"
 #include <stdio.h>
 void printEmtpy(){
-    printf("helloworld\n");
+    printf("helloworld called by thread: %d\n", std::this_thread::get_id());
 }
 int main(){
     threadPool threadPool(std::thread::hardware_concurrency());
-    threadPool.submit(&printEmtpy);
+    for(int i=0;i<8;i++){
+        threadPool.submit(&printEmtpy);
+    }
     return 0;
 }

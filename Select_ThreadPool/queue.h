@@ -23,24 +23,24 @@ class Queue{
     public:
         void push_task(const std::function<void()> &task)
         {
-            printf("entry added to queue\n");
+            //printf("entry added to queue\n");
             //tasks_total++;
             {
                 const std::scoped_lock lock(queue_mutex);
                 tasks.push(std::function<void()>(task));
             }
         }
-        bool pop_task(std::function<void()> task)
+        bool pop_task(std::function<void()> &task)
         {
             
             const std::scoped_lock lock(queue_mutex);
             if (tasks.empty()){
-                printf("not poppoing\n");
+                //printf("not poppoing\n");
                 return false;
             }
             else
             {
-                printf("poppoing\n");
+                //printf("poppoing\n");
                 task = std::move(tasks.front());
                 tasks.pop();
                 return true;
