@@ -1,5 +1,6 @@
 //#include "threadpool_centralized.h"
-#include "threadpool_perthread.h"
+//#include "threadpool_perthread.h"
+#include "threadpool_test.h"
 #include <stdio.h>
 void printEmtpy(){
     printf("helloworld called by thread: %d\n", std::this_thread::get_id());
@@ -12,7 +13,7 @@ int main(){
     }
     #endif
     #if 1
-    threadPool_PerThread threadPool(std::thread::hardware_concurrency());
+    threadPool_test threadPool(std::thread::hardware_concurrency());
     threadPool.submit(&printEmtpy);
     #endif
     return 0;
