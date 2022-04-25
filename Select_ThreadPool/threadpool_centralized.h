@@ -10,7 +10,8 @@ class threadPool{
 
     public:
         uint32_t num_of_threads;
-        std::atomic<bool> running = true;
+        std::atomic<bool> runningFlag = false;
+        std::atomic<bool> breakFlag = false;
         std::unique_ptr<std::thread[]> myThreads;
         Queue queue;
         // constructor
@@ -28,12 +29,20 @@ class threadPool{
             }
         }
         void worker(){
-            while(running){
-                // grab a task
-                std::function<void()> task;
-                if (queue.pop_task(task))
-                {
-                    task();
+            while(true){
+                if(runningFlag){
+                    // grab a task
+                    std::function<void()> task;
+                    if (queue.pop_task(task))
+                    {
+                        task();
+                    } else {
+                        // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
+                        // the user also wants to close down
+                        if(breakFlag){
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -43,12 +52,18 @@ class threadPool{
                 myThreads[i].join();
             }
         }
+        // this allows adding an entry to the queue
         void submit(const std::function<void()> &task){
             // add tasks to queue?
             queue.push_task(task);
         }
+        // this ensures that initially all the tasks are queued up properly before consumption
+        void dispatch(){
+            runningFlag = true;
+        }
+        // this dtor waits for all threads to join
         ~threadPool(){
-            running = false;
+            breakFlag = true;
             destroy_threads();
         }
 };

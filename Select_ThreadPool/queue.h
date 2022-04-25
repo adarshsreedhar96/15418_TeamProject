@@ -9,29 +9,33 @@ using namespace std;
  * 
  */
 class Queue{
+    
     private:
         // fields
         // initialize an emtpy queue
-        std::queue<function<void()>> tasks = {};
+        std::queue<function<void()>> tasks;
         /**
          * @brief A mutex to synchronize access to the task queue 
          * by different threads.
          */
         // why is it mutable though
-        mutable std::mutex queue_mutex = {};
+        //mutable std::mutex queue_mutex = {};
         // methods
     public:
+    Queue(){
+        tasks = {};
+    }
+        // push_task with no arguments
         void push_task(const std::function<void()> &task)
         {
             {
-                const std::scoped_lock lock(queue_mutex);
+                //const std::scoped_lock lock(queue_mutex);
                 tasks.push(std::function<void()>(task));
             }
         }
         bool pop_task(std::function<void()> &task)
         {
-            
-            const std::scoped_lock lock(queue_mutex);
+            //const std::scoped_lock lock(queue_mutex);
             if (tasks.empty()){
                 return false;
             }

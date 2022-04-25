@@ -4,78 +4,95 @@
 #include <atomic>
 #include<stdlib.h>
 
-// using namespace std;
-// class threadPool_PerThread{
-//     private:
+using namespace std;
+class threadPool_PerThread{
+    private:
 
-//     public:
-//         uint32_t num_of_threads;
-//         std::atomic<bool> running = false;
-//         std::unique_ptr<thread[]> myThreads;
-//         //std::unique_ptr<Queue[]> myQueues;
-//         std::vector<Queue> myQueues;
-//         // constructor
-//         threadPool_PerThread(int numOfThreads){
-//             printf("number of threads: %d\n", numOfThreads);
-//             num_of_threads = numOfThreads;
-//             // create an array of that many threads
-//             myThreads = std::make_unique<thread[]>(num_of_threads);
-//             //myQueues  = std::make_unique<Queue[]>(num_of_threads);
-//             for(int i=0;i<num_of_threads; i++){
-//                 Queue queue;
-//                 myQueues.push_back(queue); 
-//             }
-//             /*
-//             vector<Queue> myQueues;
-//             for(int i=0;i<num_of_threads; i++){
-//                 Queue queue;
-//                 this->myQueues[i]=queue;
-//             }
-//             */
-            
-//             // instantiate 
-//             // create the pool
-//             create_threads();
-//         }
-//         void create_threads(){
-//             for(int i=0;i<num_of_threads;i++){
-//                 myThreads[i] = thread(&threadPool_PerThread::worker, this);
-//             }
-//         }
-//         Queue getQueueHandle(int thread_id){
-//             return myQueues[thread_id-1];
-//         }
-//         void worker(){
-//             // should we have a lock to access the array?
-//             //Queue tasks = getQueueHandle(std::hash<std::thread::id>{}(std::this_thread::get_id()));
-//             auto tasks = myQueues.at(std::hash<std::thread::id>{}(std::this_thread::get_id())-1);
-//             //Queue tasks = myQueues[std::hash<>];
-//             while(running){
-//                 // grab a task
-//                 std::function<void()> task;
-//                 if (tasks.pop_task(task))
-//                 {
-//                     task();
-//                 }
-//             }
-//         }
-//         void destroy_threads(){
-//             for (uint32_t i = 0; i < num_of_threads; i++)
-//             {
-//                 myThreads[i].join();
-//             }
-//         }
-//         void submit(const std::function<void()> &task){
-//             // put tasks onto each queue
-//             // but how do we access them, and also get track of their threads?
-//             for(int i=0;i<8;i++){
-//                 myQueues[i].push_task(std::function<void()>(task));
-//             }
-//             // now launch all of them
-//             running = true;
-//         }
-//         ~threadPool_PerThread(){
-//             running = false;
-//             destroy_threads();
-//         }
-// };
+    public:
+        uint32_t num_of_threads;
+        std::atomic<bool> runningFlag = false;
+        std::atomic<bool> breakFlag = false;
+        std::unique_ptr<std::thread[]> myThreads;
+        std::vector<int> threadIdToIndexMapping;
+        std::vector<Queue> myQueues;
+        std::mutex per_thread_mutex = {};
+        // constructor
+        threadPool_PerThread(int numOfThreads){
+            printf("number of threads: %d\n", numOfThreads);
+            num_of_threads = numOfThreads;
+            // create an array of that many threads
+            myThreads = std::make_unique<std::thread[]>(num_of_threads);
+            for(int i=0;i<num_of_threads;i++){
+                // create a new queue instance
+                myQueues.push_back(Queue());
+            }
+            printf("queues length: %d\n", myQueues.size());
+            // create the pool
+            create_threads();
+            // not sure if this is necessary
+        }  
+        void create_threads(){
+            for(int i=0;i<num_of_threads;i++){
+                myThreads[i] = thread(&worker, this);
+            }
+        }
+        void setIndexFromThreadId(uint64_t x){
+            const std::scoped_lock lock(per_thread_mutex);
+            threadIdToIndexMapping.push_back(x);
+        }
+
+        int getIndexFromThreadId(int threadId){
+            const std::scoped_lock lock(per_thread_mutex);
+            std::vector<int>::iterator index = std::find(threadIdToIndexMapping.begin(), threadIdToIndexMapping.end(), threadId);
+            if (index != threadIdToIndexMapping.end()) {
+                return (index - threadIdToIndexMapping.begin());
+            } else {
+                printf("no match found!\n");
+                return -1;
+            }
+        }
+        void worker(){
+            uint64_t thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id());
+            setIndexFromThreadId(thread_id);
+            int index = getIndexFromThreadId(thread_id);
+            while(true){
+                if(runningFlag){
+                    // grab a task
+                    std::function<void()> task;
+                    if (myQueues[index].pop_task(task))
+                    {
+                        task();
+                    } else {
+                        // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
+                        // the user also wants to close down
+                        if(breakFlag){
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        void destroy_threads(){
+            for (uint32_t i = 0; i < num_of_threads; i++)
+            {
+                myThreads[i].join();
+            }
+        }
+        void submit(const std::function<void()> &task){
+            printf("myQueues size: %d\n", myQueues.size());
+            // put tasks onto each queue
+            // but how do we access them, and also get track of their threads?
+            for(int i=0;i<num_of_threads;i++){
+                myQueues[i].push_task(task);
+            }
+        }
+        
+        void dispatch(){
+            runningFlag = true;
+        }
+        // dtor 
+        ~threadPool_PerThread(){
+            breakFlag = true;
+            destroy_threads();
+        }
+};
