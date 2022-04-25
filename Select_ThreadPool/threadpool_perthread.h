@@ -13,9 +13,7 @@ class threadPool_PerThread{
         std::atomic<bool> runningFlag = false;
         std::atomic<bool> breakFlag = false;
         std::unique_ptr<std::thread[]> myThreads;
-        std::vector<int> threadIdToIndexMapping;
         std::vector<Queue> myQueues;
-        std::mutex per_thread_mutex = {};
         // constructor
         threadPool_PerThread(int numOfThreads){
             printf("number of threads: %d\n", numOfThreads);
@@ -33,28 +31,10 @@ class threadPool_PerThread{
         }  
         void create_threads(){
             for(int i=0;i<num_of_threads;i++){
-                myThreads[i] = thread(&worker, this);
+                myThreads[i] = thread(&worker, this, i);
             }
         }
-        void setIndexFromThreadId(uint64_t x){
-            const std::scoped_lock lock(per_thread_mutex);
-            threadIdToIndexMapping.push_back(x);
-        }
-
-        int getIndexFromThreadId(int threadId){
-            const std::scoped_lock lock(per_thread_mutex);
-            std::vector<int>::iterator index = std::find(threadIdToIndexMapping.begin(), threadIdToIndexMapping.end(), threadId);
-            if (index != threadIdToIndexMapping.end()) {
-                return (index - threadIdToIndexMapping.begin());
-            } else {
-                printf("no match found!\n");
-                return -1;
-            }
-        }
-        void worker(){
-            uint64_t thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id());
-            setIndexFromThreadId(thread_id);
-            int index = getIndexFromThreadId(thread_id);
+        void worker(int index){
             while(true){
                 if(runningFlag){
                     // grab a task
@@ -79,7 +59,7 @@ class threadPool_PerThread{
             }
         }
         void submit(const std::function<void()> &task){
-            printf("myQueues size: %d\n", myQueues.size());
+            //printf("myQueues size: %d\n", myQueues.size());
             // put tasks onto each queue
             // but how do we access them, and also get track of their threads?
             for(int i=0;i<num_of_threads;i++){
