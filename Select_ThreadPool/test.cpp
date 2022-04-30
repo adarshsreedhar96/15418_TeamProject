@@ -3,15 +3,13 @@
 //#include "threadpool_test.h"
 #include <stdio.h>
 #include <unistd.h>
+#include "mandelbrot.h"
 using namespace std;
-
-// extern void mandelbrotThread(int numThreads, float x0, float y0, float x1,
-//                              float y1, int width, int height, int maxIterations,
-//                              int output[]);
 
 void printEmpty(){
     printf("helloworld called by thread: %d\n", std::this_thread::get_id());
 }
+
 int main(){
 
     #if 0
@@ -24,10 +22,43 @@ int main(){
     threadPool.dispatch();
     #endif
     #if 1
-    threadPool_PerThread threadPool(std::thread::hardware_concurrency()*5);
-    threadPool.submit(&printEmpty);
+    const int numOfThreads = std::thread::hardware_concurrency();
+    // 
+    typedef WorkerArgs* WAPtr;
+    WAPtr* args = (WAPtr*) malloc(sizeof(WorkerArgs*)*numOfThreads);
+    for (int i = 0; i < numOfThreads; i++) {
+        args[i] =  (WorkerArgs*) malloc(sizeof(WorkerArgs));
+    }
+
+    //WorkerArgs* args = (WorkerArgs*) malloc(sizeof(WorkerArgs)*numOfThreads);
+    int width = 600;
+    int height = 600;
+    int *output = new int[width * height];
+
+    for (int i = 0; i < numOfThreads; i++) {
+        args[i]->threadId = i;
+        // TODO: Set thread arguments here
+        // assigning all values
+        args[i]->x0 = -2.167;
+        args[i]->y0 = 1.167;
+        args[i]->x1 = -1;
+        args[i]->y1 = 1;
+        args[i]->height = height;
+        args[i]->width  = width;
+        args[i]->maxIterations = 100;
+        args[i]->output = output;
+        args[i]->numThreads= numOfThreads;
+        args[i]->startRow  = i*(height/numOfThreads);
+        if(i==(numOfThreads-1)){
+            args[i]->totalRows  = height-args[i]->startRow;
+        } else {
+            args[i]->totalRows = height/numOfThreads;
+        }
+    }
+    threadPool_PerThread threadPool(numOfThreads);
+    //threadPool.submit(&printEmpty, numOfThreads);
+    threadPool.submit(&workerThreadStart, args, numOfThreads);
     threadPool.dispatch();
-    //sleep(2);
     #endif
     return 0;
 }

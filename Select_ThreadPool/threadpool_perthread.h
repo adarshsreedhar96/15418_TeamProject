@@ -12,6 +12,7 @@ class threadPool_PerThread{
         uint32_t num_of_threads;
         std::atomic<bool> runningFlag = false;
         std::atomic<bool> breakFlag = false;
+        std::atomic<bool> isArgumentsPresent = false;
         std::unique_ptr<std::thread[]> myThreads;
         std::vector<Queue> myQueues;
         // constructor
@@ -34,19 +35,36 @@ class threadPool_PerThread{
                 myThreads[i] = thread(&worker, this, i);
             }
         }
+
         void worker(int index){
             while(true){
                 if(runningFlag){
-                    // grab a task
-                    std::function<void()> task;
-                    if (myQueues[index].pop_task(task))
-                    {
-                        task();
+                    if(isArgumentsPresent){
+                        // grab a task
+                        std::function<void(void*)> newTask;
+                        void* args;
+                        if (myQueues[index].pop_task(newTask, &args))
+                        {
+                            newTask(args);
+                        } else {
+                            // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
+                            // the user also wants to close down
+                            if(breakFlag){
+                                break;
+                            }
+                        }
                     } else {
-                        // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
-                        // the user also wants to close down
-                        if(breakFlag){
-                            break;
+                        // grab a task
+                        std::function<void()> task;
+                        if (myQueues[index].pop_task(task))
+                        {
+                            task();
+                        } else {
+                            // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
+                            // the user also wants to close down
+                            if(breakFlag){
+                                break;
+                            }
                         }
                     }
                 }
@@ -58,8 +76,9 @@ class threadPool_PerThread{
                 myThreads[i].join();
             }
         }
-        void submit(const std::function<void()> &task){
-            //printf("myQueues size: %d\n", myQueues.size());
+        
+        void submit(const std::function<void()> &task, int numberOfTasks){
+            isArgumentsPresent = false;
             // put tasks onto each queue
             // but how do we access them, and also get track of their threads?
             for(int i=0;i<num_of_threads;i++){
@@ -67,6 +86,17 @@ class threadPool_PerThread{
             }
         }
         
+        template <typename T>
+        void submit(const std::function<void(void*)> &task, T** args, int numberOfTasks){
+            isArgumentsPresent = true;
+            // how do we get to know the size?
+            // we split into num_of_threads for now
+            for(int i=0;i<numberOfTasks;i++) {
+                // since number of threads and number of tasks may not be the same
+                // need this
+                myQueues[i%num_of_threads].push_task(task, *(args+i));
+            }
+        }
         void dispatch(){
             runningFlag = true;
         }
