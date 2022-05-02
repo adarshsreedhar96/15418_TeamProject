@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.scala": "scala",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
