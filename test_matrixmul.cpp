@@ -9,9 +9,11 @@ using namespace std;
 int main()
 {
 
-    const int numOfThreads = std::thread::hardware_concurrency();
+    const int numOfThreads = 8;
     //
-    void *args;
+    //void *args;
+    MatMul matMul;
+    MatMul::matrixmul* args = (MatMul::matrixmul *)malloc(sizeof(MatMul::matrixmul *) * numOfThreads);
     int mat1[16] = {
         1, 1, 1, 1,
         2, 2, 2, 2,
@@ -24,11 +26,16 @@ int main()
         3, 3, 3, 3,
         4, 4, 4, 4};
 
-    MatMul matMul = new MatMul;
-    matMul.setInput(&mat1, &mat2, 16);
-    matMul.getTasks(args, numOfThreads);
+    matMul.setInput(mat1, mat2, 16);
+    matMul.getTasks(&args, numOfThreads);
     threadPool_PerThread threadPool(numOfThreads);
     // threadPool.submit(&printEmpty, numOfThreads);
-    threadPool.submit(&matMul.workerTask, args, numOfThreads);
+    threadPool.submit(&MatMul::workerTask, &args, numOfThreads);
     threadPool.dispatch();
+    for(int i=0;i<4;i++){
+        for(int j=0;j<4;j++){
+            int* temp = args[0].output+((i-1)*args[0].size)+j;
+            printf("[%d][%d]: %d\n", i, j, *temp);
+        }
+    }
 }
