@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <queue>
 #include <functional>
-#include <functional>
 #include <mutex>
 #include "task.h"
 using namespace std;
@@ -24,33 +23,36 @@ class Queue{
          */
         // why is it mutable though
         //mutable std::mutex queue_mutex = {};
+        std::mutex* queue_mutex;
         // methods
     public:
     Queue(){
         tasks = {};
         tasksWithTaskStruct = {};
+        queue_mutex = new std::mutex();
     }
         // push_task with no arguments
         void push_task(const std::function<void()> &task)
         {
             {
                 //const std::scoped_lock lock(queue_mutex);
+                const std::lock_guard<std::mutex> lock(*queue_mutex);
                 tasks.push(std::function<void()>(task));
             }
-        }
-        
+        }      
         // push_task with arguments
         void push_task(const std::function<void(void*)> &task, void* args)
         {
             {
                 //const std::scoped_lock lock(queue_mutex);
+                const std::lock_guard<std::mutex> lock(*queue_mutex);
                 tasksWithTaskStruct.push({task, args});
             }
-        }
-        
+        }     
         bool pop_task(std::function<void()> &task)
         {
             //const std::scoped_lock lock(queue_mutex);
+            const std::lock_guard<std::mutex> lock(*queue_mutex);
             if (tasks.empty()){
                 return false;
             }
@@ -62,6 +64,8 @@ class Queue{
             }
         }
         bool pop_task(std::function<void(void*)> &task, void** args) {
+            //const std::scoped_lock lock(queue_mutex);
+            const std::lock_guard<std::mutex> lock(*queue_mutex);
             if (tasksWithTaskStruct.empty()){
                 return false;
             }

@@ -10,42 +10,78 @@ class threadPool{
 
     public:
         uint32_t num_of_threads;
-        std::atomic<bool> runningFlag = false;
-        std::atomic<bool> breakFlag = false;
-        std::unique_ptr<std::thread[]> myThreads;
+        std::atomic_bool runningFlag = ATOMIC_VAR_INIT(false);
+        std::atomic_bool breakFlag   = ATOMIC_VAR_INIT(false);
+        std::atomic_bool isArgumentsPresent = ATOMIC_VAR_INIT(false);
+        std::vector<std::thread> myThreads;
         Queue queue;
         // constructor
         threadPool(int numOfThreads){
             printf("number of threads: %d\n", numOfThreads);
             num_of_threads = numOfThreads;
-            // create an array of that many threads
-            myThreads = std::make_unique<std::thread[]>(num_of_threads);
             // create the pool
             create_threads();
         }
         void create_threads(){
             for(int i=0;i<num_of_threads;i++){
-                myThreads[i] = thread(&threadPool::worker, this);
+                myThreads.push_back(std::thread(&threadPool::worker, this, i));
             }
         }
-        void worker(){
+        void worker(int index){
+            printf("worker() called with thread_id: %d\n", index);
             while(true){
                 if(runningFlag){
-                    // grab a task
-                    std::function<void()> task;
-                    if (queue.pop_task(task))
-                    {
-                        task();
+                    if(isArgumentsPresent){
+                        // grab a task
+                        std::function<void(void*)> newTask;
+                        void* args;
+                        if (queue.pop_task(newTask, &args))
+                        {
+                            newTask(args);
+                        } else {
+                            // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
+                            // the user also wants to close down
+                            if(breakFlag){
+                                break;
+                            }
+                        }
                     } else {
-                        // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
-                        // the user also wants to close down
-                        if(breakFlag){
-                            break;
+                        // grab a task
+                        std::function<void()> task;
+                        if (queue.pop_task(task))
+                        {
+                            task();
+                        } else {
+                            // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
+                            // the user also wants to close down
+                            if(breakFlag){
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
+
+        // void worker(){
+        //     while(true){
+        //         if(runningFlag){
+        //             // grab a task
+        //             std::function<void()> task;
+        //             if (queue.pop_task(task))
+        //             {
+        //                 task();
+        //             } else {
+        //                 // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
+        //                 // the user also wants to close down
+        //                 if(breakFlag){
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
         void destroy_threads(){
             for (uint32_t i = 0; i < num_of_threads; i++)
             {
@@ -53,16 +89,32 @@ class threadPool{
             }
         }
         // this allows adding an entry to the queue
-        void submit(const std::function<void()> &task){
-            // add tasks to queue?
-            queue.push_task(task);
+        void submit(const std::function<void()> &task, int numberOfTasks){
+            isArgumentsPresent = false;
+            // put tasks onto each queue
+            // but how do we access them, and also get track of their threads?
+            for(int i=0;i<num_of_threads;i++){
+                queue.push_task(task);
+            }
+        }
+        
+        template <typename T>
+        void submit(const std::function<void(void*)> &task, T** args, int numberOfTasks){
+            isArgumentsPresent = true;
+            // how do we get to know the size?
+            // we split into num_of_threads for now
+            for(int i=0;i<numberOfTasks;i++) {
+                // since number of threads and number of tasks may not be the same
+                // need this
+                queue.push_task(task, *(args+i));
+            }
         }
         // this ensures that initially all the tasks are queued up properly before consumption
         void dispatch(){
             runningFlag = true;
         }
         // this dtor waits for all threads to join
-        ~threadPool(){
+        void clearTasks(){
             breakFlag = true;
             destroy_threads();
         }

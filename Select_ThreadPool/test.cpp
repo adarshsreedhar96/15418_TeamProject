@@ -1,12 +1,20 @@
-//#include "threadpool_centralized.h"
-#include "threadpool_perthread.h"
-//#include "threadpool_test.h"
 #include <stdio.h>
 #include <unistd.h>
-#include "mandelbrot.h"
 #include <stdlib.h>
 #include <cstring>
 #include <getopt.h>
+
+#define PERTHREAD_QUEUE 0
+#define CENTRALIZED_QUEUE 1
+
+#if CENTRALIZED_QUEUE
+#include "threadpool_centralized.h"
+#endif
+#if PERTHREAD_QUEUE
+#include "threadpool_perthread.h"
+#endif
+
+#include "mandelbrot.h"
 
 using namespace std;
 
@@ -15,6 +23,18 @@ void printEmpty(){
 }
 
 int main(int argc, char **argv) {
+    #if 0
+    int num_of_threads = std::thread::hardware_concurrency();
+    //int num_of_threads = 16;
+    threadPool threadPool(num_of_threads);
+    for(int i=0;i<num_of_threads;i++){
+        threadPool.submit(&printEmpty);
+    }
+    threadPool.dispatch();
+    threadPool.clearTasks();
+    #endif
+
+    #if 1
     // change this as required
     viewIndex = 6;
     scaleAndShift(x0, x1, y0, y1, scaleValue, shiftX, shiftY);
@@ -53,8 +73,17 @@ int main(int argc, char **argv) {
             args[i]->totalRows  = height-args[i]->startRow;
         }
     }
+        #if PERTHREAD_QUEUE
         threadPool_PerThread threadPool(numOfThreads);
         threadPool.submit(&workerThreadStart, args, numOfThreads);
+        #endif
+        #if CENTRALIZED_QUEUE
+        threadPool threadPool(numOfThreads);
+        for(int i=0;i<numOfThreads;i++){
+            threadPool.submit(&workerThreadStart, args, numOfThreads);
+        }
+        #endif
+
         threadPool.dispatch();
         threadPool.clearTasks();
 
@@ -71,4 +100,5 @@ int main(int argc, char **argv) {
         delete[] output_thread;
         return 0;
     }
+    #endif
 }
