@@ -85,11 +85,11 @@ public:
     }
     void print_tasks()
     {
-        queue tmp_q = tasks; // copy the original queue to the temporary queue
+        std::queue<function<void()> > tmp_q = tasks; // copy the original queue to the temporary queue
         while (!tmp_q.empty())
         {
             std::function<void()> q_element = tmp_q.front();
-            printf("%s\n", q_element);
+            // printf("%s\n", q_element);
             tmp_q.pop();
         }
     }
