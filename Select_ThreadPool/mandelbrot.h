@@ -1,6 +1,6 @@
 #include<stdio.h>
 #define VIEWCNT 7
-/*
+
 // basic initializations
 const int width = 600;
 // Height of the canvas
@@ -8,7 +8,7 @@ const int height = 600;
 // Height of the actual image.  Make smaller to detect overrunning array
 const int iheight = height - 1;
 const int maxIterations = 256;
-int numThreads = 2;
+const int numOfThreads = std::thread::hardware_concurrency();
 
 float x0 = -2.167;
 float x1 = 1.167;
@@ -19,7 +19,16 @@ float y1 = 1;
 float scaleValues[VIEWCNT] = {0.01f, 1.0f,  0.015f, 0.02f, 0.02f, 0.02f, 0.002f};
 float shiftXs[VIEWCNT] = {0.0f, 0.0f, -0.98f, 0.35f, 0.0f, -1.5f, -1.4f};
 float shiftYs[VIEWCNT] = {0.0f, 0.0f, 0.30f, 0.05f, 0.73f, 0.0f, 0.0f};
-*/
+
+int viewIndex = 6;
+// // End parsing of commandline options
+float scaleValue = scaleValues[viewIndex];
+float shiftX = shiftXs[viewIndex];
+float shiftY = shiftYs[viewIndex];
+
+int *output_serial = new int[width * height];
+int *output_thread = new int[width * height];
+
 void scaleAndShift(float &x0, float &x1, float &y0, float &y1, float scale,
                    float shiftX, float shiftY) {
     x0 *= scale;
@@ -108,7 +117,6 @@ void mandelbrotSerial(float x0, float y0, float x1, float y1, int width,
 void *workerThreadStart(void *threadArgs) {
     WorkerArgs *args = static_cast<WorkerArgs *>(threadArgs);
     int endRow = args->startRow + args->totalRows;
-    printf("startRow: %d to endRow:%d\n", args->startRow, endRow);
     float dx = (args->x1 - args->x0) / args->width;
     float dy = (args->y1 - args->y0) / args->height;
     //for (int j = args->startRow; j < args->totalRows; j+=args->numThreads) {

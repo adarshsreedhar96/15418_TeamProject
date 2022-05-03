@@ -15,14 +15,12 @@ class threadPool_PerThread{
         std::atomic_bool breakFlag = ATOMIC_VAR_INIT(false);
         std::atomic_bool isArgumentsPresent = ATOMIC_VAR_INIT(false);
         std::vector<std::thread> myThreads;
-        //std::vector<std::thread> myThreads;
         std::vector<Queue> myQueues;
         // constructor
         threadPool_PerThread(int numOfThreads){
             printf("number of threads: %d\n", numOfThreads);
             num_of_threads = numOfThreads;
             // create an array of that many threads
-            //myThreads = std::make_unique<std::thread[]>(num_of_threads);
             for(int i=0;i<num_of_threads;i++){
                 // create a new queue instance
                 myQueues.push_back(Queue());
@@ -34,7 +32,6 @@ class threadPool_PerThread{
         }  
         void create_threads(){
             for(int i=0;i<num_of_threads;i++){
-                //myThreads[i] = thread(&worker, this, i);
                 myThreads.push_back(std::thread(&threadPool_PerThread::worker, this, i));
             }
         }
@@ -104,8 +101,7 @@ class threadPool_PerThread{
         void dispatch(){
             runningFlag = true;
         }
-        // dtor 
-        ~threadPool_PerThread(){
+        void clearTasks(){
             breakFlag = true;
             destroy_threads();
         }
