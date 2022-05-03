@@ -2,14 +2,10 @@
 #include <stdlib.h>
 #include <queue>
 #include <functional>
+#include <functional>
 #include <mutex>
 #include "task.h"
 using namespace std;
-
-// typedef struct {
-//     const std::function<void(void*)> &task;
-//     void *args;
-// } Task;
 
 /**
  * @brief A queue of tasks to be executed by the threads.
@@ -76,15 +72,6 @@ class Queue{
                 task = dequeuedTask.task;
                 *args = dequeuedTask.args;
                 return true;
-            }
-        }
-        void print_tasks() {
-            queue tmp_q = tasks; //copy the original queue to the temporary queue
-            while (!tmp_q.empty())
-            {
-                std::function<void()> q_element = tmp_q.front();
-                printf("%s\n", q_element);
-                tmp_q.pop();
             }
         }
         bool isEmpty(){

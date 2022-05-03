@@ -1,8 +1,9 @@
-#include<stdio.h>
-#include<thread>
+#include <stdio.h>
+#include <thread>
+#include <iostream>
 #include "queue.h"
 #include <atomic>
-#include<stdlib.h>
+#include <stdlib.h>
 
 using namespace std;
 class threadPool_PerThread{
@@ -10,17 +11,18 @@ class threadPool_PerThread{
 
     public:
         uint32_t num_of_threads;
-        std::atomic<bool> runningFlag = false;
-        std::atomic<bool> breakFlag = false;
-        std::atomic<bool> isArgumentsPresent = false;
-        std::unique_ptr<std::thread[]> myThreads;
+        std::atomic_bool runningFlag = ATOMIC_VAR_INIT(false);
+        std::atomic_bool breakFlag = ATOMIC_VAR_INIT(false);
+        std::atomic_bool isArgumentsPresent = ATOMIC_VAR_INIT(false);
+        std::vector<std::thread> myThreads;
+        //std::vector<std::thread> myThreads;
         std::vector<Queue> myQueues;
         // constructor
         threadPool_PerThread(int numOfThreads){
             printf("number of threads: %d\n", numOfThreads);
             num_of_threads = numOfThreads;
             // create an array of that many threads
-            myThreads = std::make_unique<std::thread[]>(num_of_threads);
+            //myThreads = std::make_unique<std::thread[]>(num_of_threads);
             for(int i=0;i<num_of_threads;i++){
                 // create a new queue instance
                 myQueues.push_back(Queue());
@@ -32,11 +34,13 @@ class threadPool_PerThread{
         }  
         void create_threads(){
             for(int i=0;i<num_of_threads;i++){
-                myThreads[i] = thread(&worker, this, i);
+                //myThreads[i] = thread(&worker, this, i);
+                myThreads.push_back(std::thread(&threadPool_PerThread::worker, this, i));
             }
         }
 
         void worker(int index){
+            printf("worker() called with thread_id: %d\n", index);
             while(true){
                 if(runningFlag){
                     if(isArgumentsPresent){
