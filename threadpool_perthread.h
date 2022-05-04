@@ -43,7 +43,7 @@ class threadPool_PerThread{
                 if(runningFlag){
                     if(isArgumentsPresent){
                         if(index==0){
-                            printf("came here: %d\n", myQueues[index].getSize(true));
+                            //printf("came here: %d\n", myQueues[index].getSize(true));
                         }
                         // grab a task
                         std::function<void(void*)> newTask;
@@ -51,16 +51,17 @@ class threadPool_PerThread{
                         if (myQueues[index].pop_task(newTask, &args))
                         {
                             if(index == 0){
-                                printf("run task: %d\n", index);
+                                //printf("run task: %d\n", index);
                             }
                             newTask(args);
                         } else {
                             // this means there are no entries in the queue.
                             // Attempt to steal tasks
                             if((!stealTasks(index)) && breakFlag){
+                            //if(breakFlag){
                                 break;
                             }
-                            printf("size of queue for thread: %d is %d\n", index, myQueues[index].getSize(true));
+                            //printf("size of queue for thread: %d is %d\n", index, myQueues[index].getSize(true));
                         }
                     } else {
                         // grab a task
@@ -72,6 +73,7 @@ class threadPool_PerThread{
                             // this means there are no entries in the queue.
                             // Attempt to steal tasks
                             if((!stealTasks(index)) && breakFlag){
+                            //if(breakFlag){
                                 break;
                             }
                         }
@@ -92,7 +94,7 @@ class threadPool_PerThread{
                     if (myQueues[i].pop_task(newTask, &args)){
                         // we found a task! Lets steal it
                         printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
-                        //newTask(args);
+                        newTask(args);
                         //myQueues[index].push_task(newTask, &args);
 
                         //myQueues[i%num_of_threads].push_task(task, *(args+i));

@@ -1,0 +1,344 @@
+number of threads: 8
+queues length: 8
+workerThreadStart called by thread: -308914432
+workerThreadStart called by thread: -308914432
+workerThreadStart called by thread: -350877952
+workerThreadStart called by thread: -350877952
+workerThreadStart called by thread: -350877952
+workerThreadStart called by thread: -308914432
+workerThreadStart called by thread: -350877952
+workerThreadStart called by thread: -342485248
+workerThreadStart called by thread: -308914432
+thread 2 is trying to steal
+thread: 3 has queue of size: 3
+workerThreadStart called by thread: -342485248
+stealing task from thread: 3 and giving to thread: 2
+workerThreadStart called by thread: -325699840
+workerThreadStart called by thread: -308914432
+workerThreadStart called by thread: -300521728
+thread 7 is trying to steal
+workerThreadStart called by thread: -334092544
+thread 2 is trying to steal
+thread: 3 has queue of size: 2
+workerThreadStart called by thread: -317307136
+workerThreadStart called by thread: -342485248
+workerThreadStart called by thread: -292129024
+workerThreadStart called by thread: -342485248
+workerThreadStart called by thread: -334092544
+workerThreadStart called by thread: -325699840
+workerThreadStart called by thread: -292129024
+stealing task from thread: 3 and giving to thread: 2
+workerThreadStart called by thread: -292129024
+thread 6 is trying to steal
+workerThreadStart called by thread: -292129024
+workerThreadStart called by thread: -308914432
+thread 0 is trying to steal
+workerThreadStart called by thread: -300521728
+thread 2 is trying to steal
+workerThreadStart called by thread: -317307136
+thread: 7 has queue of size: 0
+queue of thread: 6 is empty
+thread: 1 has queue of size: 2
+workerThreadStart called by thread: -325699840
+thread: 3 has queue of size: 0
+stealing task from thread: 1 and giving to thread: 0
+workerThreadStart called by thread: -325699840
+workerThreadStart called by thread: -300521728
+queue of thread: 2 is empty
+thread: 4 has queue of size: 0
+workerThreadStart called by thread: -292129024
+queue of thread: 2 is empty
+thread 4 is trying to steal
+thread 3 is trying to steal
+thread: 5 has queue of size: 1
+workerThreadStart called by thread: -334092544
+stealing task from thread: 5 and giving to thread: 4
+thread: 5 has queue of size: 1
+thread 5 is trying to steal
+thread 1 is trying to steal
+workerThreadStart called by thread: -325699840
+thread: 6 has queue of size: 0
+thread: 2 has queue of size: 0
+thread 0 is trying to steal
+thread: 4 has queue of size: 0
+queue of thread: 1 is empty
+thread: 3 has queue of size: 0
+thread: 1 has queue of size: 0
+thread 4 is trying to steal
+queue of thread: 1 is empty
+queue of thread: 2 is empty
+queue of thread: 5 is empty
+thread: 5 has queue of size: 0
+thread: 7 has queue of size: 0
+thread: 6 has queue of size: 0
+queue of thread: 4 is empty
+thread: 6 has queue of size: 0
+queue of thread: 4 is empty
+thread: 4 has queue of size: 0
+queue of thread: 2 is empty
+queue of thread: 5 is empty
+thread: 7 has queue of size: 0
+queue of thread: 1 is empty
+queue of thread: 0 is empty
+thread: 5 has queue of size: 0
+thread: 2 has queue of size: 0
+queue of thread: 0 is empty
+queue of thread: 1 is empty
+queue of thread: 3 is empty
+thread: 3 has queue of size: 0
+queue of thread: 0 is empty
+thread: 5 has queue of size: 0
+thread: 6 has queue of size: 0
+queue of thread: 3 is empty
+thread: 6 has queue of size: 0
+thread: 4 has queue of size: 0
+thread: 7 has queue of size: 0
+queue of thread: 3 is empty
+queue of thread: 0 is empty
+queue of thread: 1 is empty
+thread: 5 has queue of size: 0
+queue of thread: 2 is empty
+thread: 7 has queue of size: 0
+queue of thread: 4 is empty
+queue of thread: 3 is empty
+thread: 7 has queue of size: 0
+queue of thread: 1 is empty
+queue of thread: 0 is empty
+thread: 6 has queue of size: 0
+queue of thread: 0 is empty
+thread: 7 has queue of size: 0
+queue of thread: 0 is empty
+[0][0]: 27
+[0][1]: 27
+[0][2]: 27
+[0][3]: 27
+[0][4]: 27
+[0][5]: 27
+[0][6]: 27
+[0][7]: 27
+[0][8]: 27
+[0][9]: 27
+[1][0]: 54
+[1][1]: 54
+[1][2]: 54
+[1][3]: 54
+[1][4]: 54
+[1][5]: 54
+[1][6]: 54
+[1][7]: 54
+[1][8]: 54
+[1][9]: 54
+[2][0]: 81
+[2][1]: 81
+[2][2]: 81
+[2][3]: 81
+[2][4]: 81
+[2][5]: 81
+[2][6]: 81
+[2][7]: 81
+[2][8]: 81
+[2][9]: 81
+[3][0]: 108
+[3][1]: 108
+[3][2]: 108
+[3][3]: 108
+[3][4]: 108
+[3][5]: 108
+[3][6]: 108
+[3][7]: 108
+[3][8]: 108
+[3][9]: 108
+[4][0]: 27
+[4][1]: 27
+[4][2]: 27
+[4][3]: 27
+[4][4]: 27
+[4][5]: 27
+[4][6]: 27
+[4][7]: 27
+[4][8]: 27
+[4][9]: 27
+[5][0]: 54
+[5][1]: 54
+[5][2]: 54
+[5][3]: 54
+[5][4]: 54
+[5][5]: 54
+[5][6]: 54
+[5][7]: 54
+[5][8]: 54
+[5][9]: 54
+[6][0]: 81
+[6][1]: 81
+[6][2]: 81
+[6][3]: 81
+[6][4]: 81
+[6][5]: 81
+[6][6]: 81
+[6][7]: 81
+[6][8]: 81
+[6][9]: 81
+[7][0]: 108
+[7][1]: 108
+[7][2]: 108
+[7][3]: 108
+[7][4]: 108
+[7][5]: 108
+[7][6]: 108
+[7][7]: 108
+[7][8]: 108
+[7][9]: 108
+[8][0]: 81
+[8][1]: 81
+[8][2]: 81
+[8][3]: 81
+[8][4]: 81
+[8][5]: 81
+[8][6]: 81
+[8][7]: 81
+[8][8]: 81
+[8][9]: 81
+[9][0]: 108
+[9][1]: 108
+[9][2]: 108
+[9][3]: 108
+[9][4]: 108
+[9][5]: 108
+[9][6]: 108
+[9][7]: 108
+[9][8]: 108
+[9][9]: 108
+number of threads: 8
+queues length: 8
+workerThreadStart called by thread: 739239680
+workerThreadStart called by thread: 739239680
+workerThreadStart called by thread: 739239680
+workerThreadStart called by thread: 739239680
+workerThreadStart called by thread: 730846976
+workerThreadStart called by thread: 747632384
+workerThreadStart called by thread: 705668864
+workerThreadStart called by thread: 747632384
+workerThreadStart called by thread: 697276160
+workerThreadStart called by thread: 688883456
+workerThreadStart called by thread: 705668864
+workerThreadStart called by thread: 705668864
+workerThreadStart called by thread: 714061568
+workerThreadStart called by thread: 688883456
+workerThreadStart called by thread: 697276160
+workerThreadStart called by thread: 730846976
+workerThreadStart called by thread: 697276160
+workerThreadStart called by thread: 722454272
+workerThreadStart called by thread: 714061568
+workerThreadStart called by thread: 730846976
+workerThreadStart called by thread: 714061568
+workerThreadStart called by thread: 730846976
+workerThreadStart called by thread: 705668864
+workerThreadStart called by thread: 747632384
+workerThreadStart called by thread: 688883456
+workerThreadStart called by thread: 714061568
+workerThreadStart called by thread: 747632384
+workerThreadStart called by thread: 688883456
+workerThreadStart called by thread: 722454272
+workerThreadStart called by thread: 722454272
+workerThreadStart called by thread: 697276160
+workerThreadStart called by thread: 722454272
+[0][0]: 27
+[0][1]: 27
+[0][2]: 27
+[0][3]: 27
+[0][4]: 27
+[0][5]: 27
+[0][6]: 27
+[0][7]: 27
+[0][8]: 27
+[0][9]: 27
+[1][0]: 54
+[1][1]: 54
+[1][2]: 54
+[1][3]: 54
+[1][4]: 54
+[1][5]: 54
+[1][6]: 54
+[1][7]: 54
+[1][8]: 54
+[1][9]: 54
+[2][0]: 81
+[2][1]: 81
+[2][2]: 81
+[2][3]: 81
+[2][4]: 81
+[2][5]: 81
+[2][6]: 81
+[2][7]: 81
+[2][8]: 81
+[2][9]: 81
+[3][0]: 108
+[3][1]: 108
+[3][2]: 108
+[3][3]: 108
+[3][4]: 108
+[3][5]: 108
+[3][6]: 108
+[3][7]: 108
+[3][8]: 108
+[3][9]: 108
+[4][0]: 27
+[4][1]: 27
+[4][2]: 27
+[4][3]: 27
+[4][4]: 27
+[4][5]: 27
+[4][6]: 27
+[4][7]: 27
+[4][8]: 27
+[4][9]: 27
+[5][0]: 54
+[5][1]: 54
+[5][2]: 54
+[5][3]: 54
+[5][4]: 54
+[5][5]: 54
+[5][6]: 54
+[5][7]: 54
+[5][8]: 54
+[5][9]: 54
+[6][0]: 81
+[6][1]: 81
+[6][2]: 81
+[6][3]: 81
+[6][4]: 81
+[6][5]: 81
+[6][6]: 81
+[6][7]: 81
+[6][8]: 81
+[6][9]: 81
+[7][0]: 108
+[7][1]: 108
+[7][2]: 108
+[7][3]: 108
+[7][4]: 108
+[7][5]: 108
+[7][6]: 108
+[7][7]: 108
+[7][8]: 108
+[7][9]: 108
+[8][0]: 81
+[8][1]: 81
+[8][2]: 81
+[8][3]: 81
+[8][4]: 81
+[8][5]: 81
+[8][6]: 81
+[8][7]: 81
+[8][8]: 81
+[8][9]: 81
+[9][0]: 108
+[9][1]: 108
+[9][2]: 108
+[9][3]: 108
+[9][4]: 108
+[9][5]: 108
+[9][6]: 108
+[9][7]: 108
+[9][8]: 108
+[9][9]: 108
