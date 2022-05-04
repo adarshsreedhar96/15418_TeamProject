@@ -1,6 +1,7 @@
-#include "threadpool_centralized.h"
+//#include "threadpool_centralized.h"
 //#include "threadpool_priority.h"
 //#include "threadpool_test.h"
+#include "threadpool_perthread.h"
 #include <stdio.h>
 #include <unistd.h>
 #include "mandelbrot.cpp"
@@ -19,7 +20,7 @@ int main()
 
 
     const int numOfThreads = 2;//std::thread::hardware_concurrency();
-    int numberOfTasks = numOfThreads * 3;
+    int numberOfTasks = numOfThreads * 10;
     Mandelbrot mandelbrot;
 
     typedef Mandelbrot::WorkerArgs* WAPtr;
@@ -29,7 +30,7 @@ int main()
 
     mandelbrot.getTasks(args, numberOfTasks);
     
-    threadPool threadPool(numOfThreads);
+    threadPool_PerThread threadPool(numOfThreads);
     threadPool.submit(&Mandelbrot::workerTask, args, numberOfTasks);
     auto start_time = std::chrono::high_resolution_clock::now();
     threadPool.dispatch();

@@ -82,10 +82,10 @@ class threadPool_PerThread{
             }
         }
         bool stealTasks(int index){
-            printf("thread %d is trying to steal\n");
+            //printf("thread %d is trying to steal\n");
             // iterate over the others in a ring manner
             for(int i=index+1;i<num_of_threads;i++){
-                printf("thread: %d has queue of size: %d\n", i, myQueues[i].getSize(true));
+                //printf("thread: %d has queue of size: %d\n", i, myQueues[i].getSize(true));
                 if(isArgumentsPresent){
                     // grab a task
                     std::function<void(void*)> newTask;
@@ -93,24 +93,24 @@ class threadPool_PerThread{
                     //void** args;
                     if (myQueues[i].pop_task(newTask, &args)){
                         // we found a task! Lets steal it
-                        printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
+                        //printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
                         newTask(args);
                         //myQueues[index].push_task(newTask, &args);
 
                         //myQueues[i%num_of_threads].push_task(task, *(args+i));
                         return true;
                     } else {
-                        printf("queue of thread: %d is empty\n", index);
+                        //printf("queue of thread: %d is empty\n", index);
                     }
                 } else {
                     std::function<void()> newTask;
                     if (myQueues[i].pop_task(newTask)){
                         // we found a task! Lets steal it
-                        printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
+                        //printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
                         myQueues[index].push_task(newTask);
                         return true;
                     } else {
-                        printf("queue of thread: %d is empty\n", index);
+                        //printf("queue of thread: %d is empty\n", index);
                     }
                 }
             }
