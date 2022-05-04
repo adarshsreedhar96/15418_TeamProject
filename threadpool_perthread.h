@@ -4,6 +4,7 @@
 #include "queue.h"
 #include <atomic>
 #include <stdlib.h>
+#include <typeinfo>
 
 using namespace std;
 class threadPool_PerThread{
@@ -37,22 +38,29 @@ class threadPool_PerThread{
         }
 
         void worker(int index){
-            printf("worker() called with thread_id: %d\n", index);
+            //printf("worker() called with thread_id: %d\n", index);
             while(true){
                 if(runningFlag){
                     if(isArgumentsPresent){
+                        if(index==0){
+                            printf("came here: %d\n", myQueues[index].getSize(true));
+                        }
                         // grab a task
                         std::function<void(void*)> newTask;
                         void* args;
                         if (myQueues[index].pop_task(newTask, &args))
                         {
+                            if(index == 0){
+                                printf("run task: %d\n", index);
+                            }
                             newTask(args);
                         } else {
-                            // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
-                            // the user also wants to close down
-                            if(breakFlag){
+                            // this means there are no entries in the queue.
+                            // Attempt to steal tasks
+                            if((!stealTasks(index)) && breakFlag){
                                 break;
                             }
+                            printf("size of queue for thread: %d is %d\n", index, myQueues[index].getSize(true));
                         }
                     } else {
                         // grab a task
@@ -61,15 +69,50 @@ class threadPool_PerThread{
                         {
                             task();
                         } else {
-                            // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
-                            // the user also wants to close down
-                            if(breakFlag){
+                            // this means there are no entries in the queue.
+                            // Attempt to steal tasks
+                            if((!stealTasks(index)) && breakFlag){
                                 break;
                             }
                         }
                     }
                 }
             }
+        }
+        bool stealTasks(int index){
+            printf("thread %d is trying to steal\n");
+            // iterate over the others in a ring manner
+            for(int i=index+1;i<num_of_threads;i++){
+                printf("thread: %d has queue of size: %d\n", i, myQueues[i].getSize(true));
+                if(isArgumentsPresent){
+                    // grab a task
+                    std::function<void(void*)> newTask;
+                    void* args;
+                    //void** args;
+                    if (myQueues[i].pop_task(newTask, &args)){
+                        // we found a task! Lets steal it
+                        printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
+                        //newTask(args);
+                        //myQueues[index].push_task(newTask, &args);
+
+                        //myQueues[i%num_of_threads].push_task(task, *(args+i));
+                        return true;
+                    } else {
+                        printf("queue of thread: %d is empty\n", index);
+                    }
+                } else {
+                    std::function<void()> newTask;
+                    if (myQueues[i].pop_task(newTask)){
+                        // we found a task! Lets steal it
+                        printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
+                        myQueues[index].push_task(newTask);
+                        return true;
+                    } else {
+                        printf("queue of thread: %d is empty\n", index);
+                    }
+                }
+            }
+            return false;
         }
         void destroy_threads(){
             for (uint32_t i = 0; i < num_of_threads; i++)
@@ -82,8 +125,8 @@ class threadPool_PerThread{
             isArgumentsPresent = false;
             // put tasks onto each queue
             // but how do we access them, and also get track of their threads?
-            for(int i=0;i<num_of_threads;i++){
-                myQueues[i].push_task(task);
+            for(int i=0;i<numberOfTasks;i++){
+                myQueues[i%num_of_threads].push_task(task);
             }
         }
         

@@ -63,25 +63,6 @@ class threadPool{
             }
         }
 
-        // void worker(){
-        //     while(true){
-        //         if(runningFlag){
-        //             // grab a task
-        //             std::function<void()> task;
-        //             if (queue.pop_task(task))
-        //             {
-        //                 task();
-        //             } else {
-        //                 // this means there are no entries in the queue. We can exit the loop, but let us ensure that 
-        //                 // the user also wants to close down
-        //                 if(breakFlag){
-        //                     break;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
         void destroy_threads(){
             for (uint32_t i = 0; i < num_of_threads; i++)
             {
@@ -93,7 +74,7 @@ class threadPool{
             isArgumentsPresent = false;
             // put tasks onto each queue
             // but how do we access them, and also get track of their threads?
-            for(int i=0;i<num_of_threads;i++){
+            for(int i=0;i<numberOfTasks;i++){
                 queue.push_task(task);
             }
         }

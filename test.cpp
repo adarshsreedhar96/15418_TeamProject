@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <cstring>
 #include <getopt.h>
+#include <time.h>
 
-#define PERTHREAD_QUEUE 0
-#define CENTRALIZED_QUEUE 1
+#define PERTHREAD_QUEUE 1
+#define CENTRALIZED_QUEUE 0
 
 #if CENTRALIZED_QUEUE
 #include "threadpool_centralized.h"
@@ -14,27 +15,51 @@
 #include "threadpool_perthread.h"
 #endif
 
-#include "mandelbrot.h"
+//#include "mandelbrot.h"
+#include "variablesleep.h"
+
+#define WITHOUTARGS 1
+#define WITHARGS 0
 
 using namespace std;
 
 void printEmpty(){
-    printf("helloworld called by thread: %d\n", std::this_thread::get_id());
+    //printf("helloworld called by thread: %d\n", std::this_thread::get_id());
+    srand(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+    int timeToSleep = rand() % 10;
+    printf("thread_id: %d sleep for %d\n", std::this_thread::get_id(), timeToSleep);
+    sleep(timeToSleep);
 }
 
 int main(int argc, char **argv) {
-    #if 0
+    #if WITHOUTARGS
     int num_of_threads = std::thread::hardware_concurrency();
-    //int num_of_threads = 16;
+    int numOfTasks = num_of_threads * 3;
+    #if CENTRALIZED_QUEUE
     threadPool threadPool(num_of_threads);
-    for(int i=0;i<num_of_threads;i++){
-        threadPool.submit(&printEmpty);
+    threadPool.submit(&printEmpty, num_of_threads);
+    threadPool.dispatch();
+    threadPool.clearTasks();
+    #endif
+    #if PERTHREAD_QUEUE
+
+    threadPool_PerThread threadPool(num_of_threads);
+    typedef TaskNumArgs* TNArgs;
+    TNArgs* args = (TNArgs*) malloc(sizeof(TaskNumArgs*)*numOfTasks);
+    for (int i = 0; i < numOfTasks; i++) {
+        args[i] =  (TaskNumArgs*) malloc(sizeof(TaskNumArgs));
     }
+    for (int i = 0; i < numOfTasks; i++) {
+            args[i]->taskNum = i;
+    }
+    threadPool.submit(&printTaskNum, args, numOfTasks);
     threadPool.dispatch();
     threadPool.clearTasks();
     #endif
 
-    #if 1
+    #endif
+
+    #if WITHARGS
     // change this as required
     viewIndex = 6;
     scaleAndShift(x0, x1, y0, y1, scaleValue, shiftX, shiftY);
@@ -50,13 +75,14 @@ int main(int argc, char **argv) {
     // Run the threaded version
     //
     //const int numOfThreads = std::thread::hardware_concurrency();
+    int numOfTasks = numOfThreads * 5;
     memset(output_thread, 0, width * height * sizeof(int));
     typedef WorkerArgs* WAPtr;
-    WAPtr* args = (WAPtr*) malloc(sizeof(WorkerArgs*)*numOfThreads);
-    for (int i = 0; i < numOfThreads; i++) {
+    WAPtr* args = (WAPtr*) malloc(sizeof(WorkerArgs*)*numOfTasks);
+    for (int i = 0; i < numOfTasks; i++) {
         args[i] =  (WorkerArgs*) malloc(sizeof(WorkerArgs));
     }
-    for (int i = 0; i < numOfThreads; i++) {
+    for (int i = 0; i < numOfTasks; i++) {
         args[i]->threadId = i;
         args[i]->x0 = x0;
         args[i]->y0 = y0;
@@ -67,21 +93,19 @@ int main(int argc, char **argv) {
         args[i]->maxIterations = maxIterations;
         args[i]->output = output_thread;
         args[i]->numThreads= numOfThreads;
-        args[i]->totalRows = height/numOfThreads;
+        args[i]->totalRows = height/numOfTasks;
         args[i]->startRow  = i*args[i]->totalRows;
-        if((i+1)==numOfThreads){
+        if((i+1)==numOfTasks){
             args[i]->totalRows  = height-args[i]->startRow;
         }
     }
         #if PERTHREAD_QUEUE
         threadPool_PerThread threadPool(numOfThreads);
-        threadPool.submit(&workerThreadStart, args, numOfThreads);
+        threadPool.submit(&workerThreadStart, args, numOfTasks);
         #endif
         #if CENTRALIZED_QUEUE
         threadPool threadPool(numOfThreads);
-        for(int i=0;i<numOfThreads;i++){
-            threadPool.submit(&workerThreadStart, args, numOfThreads);
-        }
+        threadPool.submit(&workerThreadStart, args, numOfTasks);
         #endif
 
         threadPool.dispatch();

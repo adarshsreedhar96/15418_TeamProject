@@ -78,8 +78,29 @@ class Queue{
                 return true;
             }
         }
+        bool pop_and_return(std::function<void(void*)> &task, void** args){
+            const std::lock_guard<std::mutex> lock(*queue_mutex);
+            if (tasksWithTaskStruct.empty()){
+                return false;
+            }
+            else
+            {
+                Task dequeuedTask = std::move(tasksWithTaskStruct.front());
+                tasksWithTaskStruct.pop();
+                task = dequeuedTask.task;
+                *args = dequeuedTask.args;
+                return true;
+            }
+        }
         bool isEmpty(){
             return tasks.empty(); 
         }
-
+        int getSize(bool getSizeOfQueueWithTasks){
+            const std::lock_guard<std::mutex> lock(*queue_mutex);
+            if(getSizeOfQueueWithTasks){
+                return tasksWithTaskStruct.size();
+            } else {
+                return tasks.size();
+            }
+        }
 };
