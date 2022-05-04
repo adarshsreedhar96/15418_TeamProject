@@ -13,28 +13,27 @@ public:
     std::atomic<bool> runningFlag = {false};
     std::atomic<bool> breakFlag = {false};
     std::vector<std::thread> myThreads;
-    std::function<void(void *)> &taskFunc;
+
     Queue queue;
 
     // constructor
-    threadPool_priority(int numOfThreads, std::function<void(void *)> &task) : taskFunc(taskFunc)
+    threadPool_priority(int numOfThreads, const std::function<void(void *)> &taskFunc)
     {
-        taskFunc = task;
         printf("number of threads: %d\n", numOfThreads);
         num_of_threads = numOfThreads;
         // create an array of that many threads
         // myThreads = std::make_unique<std::thread[]>(num_of_threads);
         // create the pool
-        create_threads();
+        create_threads(taskFunc);
     }
-    void create_threads()
+    void create_threads(const std::function<void(void *)> &taskFunc)
     {
         for (int i = 0; i < num_of_threads; i++)
         {
-            myThreads.push_back(thread(&threadPool_priority::worker, this));
+            myThreads.push_back(thread(&threadPool_priority::worker, this, taskFunc));
         }
     }
-    void worker()
+    void worker(const std::function<void(void *)> &taskFunc)
     {
         while (true)
         {
