@@ -78,17 +78,24 @@ class Queue{
                 return true;
             }
         }
-        bool pop_and_return(std::function<void(void*)> &task, void** args){
+        bool steal_task(std::vector<Task>* stolenTasks){
             const std::lock_guard<std::mutex> lock(*queue_mutex);
             if (tasksWithTaskStruct.empty()){
                 return false;
             }
             else
             {
-                Task dequeuedTask = std::move(tasksWithTaskStruct.front());
-                tasksWithTaskStruct.pop();
-                task = dequeuedTask.task;
-                *args = dequeuedTask.args;
+                // steal half the tasks
+                int currentSize = tasksWithTaskStruct.size();
+                int tasksToSteal = currentSize/2;
+                printf("stealing %d tasks\n", tasksToSteal);
+                for(int i=0;i<tasksToSteal;i++){
+                    Task dequeuedTask = std::move(tasksWithTaskStruct.front());
+                    tasksWithTaskStruct.pop();
+                    stolenTasks->push_back(dequeuedTask);
+                }
+                //task = dequeuedTask.task;
+                //*args = dequeuedTask.args;
                 return true;
             }
         }

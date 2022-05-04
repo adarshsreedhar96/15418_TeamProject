@@ -11,3 +11,11 @@ void printTaskNum(void* task_num){
     //printf("thread_id: %d sleep for %d\n", std::this_thread::get_id(), timeToSleep);
     sleep(timeToSleep);
 }
+
+void printEmpty(){
+    //printf("helloworld called by thread: %d\n", std::this_thread::get_id());
+    srand(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+    int timeToSleep = rand() % 10;
+    printf("thread_id: %d sleep for %d\n", std::this_thread::get_id(), timeToSleep);
+    sleep(timeToSleep);
+}

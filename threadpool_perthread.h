@@ -2,9 +2,12 @@
 #include <thread>
 #include <iostream>
 #include "queue.h"
+//#include "task.h"
 #include <atomic>
 #include <stdlib.h>
 #include <typeinfo>
+
+#define STEALTASKS 0
 
 using namespace std;
 class threadPool_PerThread{
@@ -19,14 +22,12 @@ class threadPool_PerThread{
         std::vector<Queue> myQueues;
         // constructor
         threadPool_PerThread(int numOfThreads){
-            printf("number of threads: %d\n", numOfThreads);
             num_of_threads = numOfThreads;
             // create an array of that many threads
             for(int i=0;i<num_of_threads;i++){
                 // create a new queue instance
                 myQueues.push_back(Queue());
             }
-            printf("queues length: %d\n", myQueues.size());
             // create the pool
             create_threads();
             // not sure if this is necessary
@@ -36,29 +37,24 @@ class threadPool_PerThread{
                 myThreads.push_back(std::thread(&threadPool_PerThread::worker, this, i));
             }
         }
-
         void worker(int index){
-            //printf("worker() called with thread_id: %d\n", index);
             while(true){
                 if(runningFlag){
                     if(isArgumentsPresent){
-                        if(index==0){
-                            //printf("came here: %d\n", myQueues[index].getSize(true));
-                        }
                         // grab a task
                         std::function<void(void*)> newTask;
                         void* args;
                         if (myQueues[index].pop_task(newTask, &args))
                         {
-                            if(index == 0){
-                                //printf("run task: %d\n", index);
-                            }
                             newTask(args);
                         } else {
                             // this means there are no entries in the queue.
                             // Attempt to steal tasks
+                            #if STEALTASKS
                             if((!stealTasks(index)) && breakFlag){
-                            //if(breakFlag){
+                            #else
+                            if(breakFlag){
+                            #endif
                                 break;
                             }
                             //printf("size of queue for thread: %d is %d\n", index, myQueues[index].getSize(true));
@@ -72,8 +68,11 @@ class threadPool_PerThread{
                         } else {
                             // this means there are no entries in the queue.
                             // Attempt to steal tasks
+                            #if STEALTASKS
                             if((!stealTasks(index)) && breakFlag){
-                            //if(breakFlag){
+                            #else
+                            if(breakFlag){
+                            #endif
                                 break;
                             }
                         }
@@ -82,23 +81,33 @@ class threadPool_PerThread{
             }
         }
         bool stealTasks(int index){
-            //printf("thread %d is trying to steal\n");
             // iterate over the others in a ring manner
             for(int i=index+1;i<num_of_threads;i++){
                 //printf("thread: %d has queue of size: %d\n", i, myQueues[i].getSize(true));
                 if(isArgumentsPresent){
+                    // create an array of Tasks
+                    std::vector<Task> stolenTasks;
                     // grab a task
-                    std::function<void(void*)> newTask;
+                    //std::function<void(void*)> newTask;
                     void* args;
-                    //void** args;
-                    if (myQueues[i].pop_task(newTask, &args)){
+                    //if (myQueues[i].pop_task(newTask, &args)){
+                    if (myQueues[i].steal_task(&stolenTasks)){
                         // we found a task! Lets steal it
                         //printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
-                        newTask(args);
-                        //myQueues[index].push_task(newTask, &args);
-
-                        //myQueues[i%num_of_threads].push_task(task, *(args+i));
-                        return true;
+                        //printf("size of vector: %d\n", stolenTasks.size());
+                        //std::function<void(void*)> newTask = stolenTasks[0].task;
+                        //void* args = stolenTasks[0].args;
+                         while (!stolenTasks.empty())
+                        {
+                            Task poppedTask = stolenTasks.back();
+                            std::function<void(void*)> newTask = poppedTask.task;
+                            void* args = poppedTask.args;
+                            newTask(args);
+                            stolenTasks.pop_back();
+                        }
+                        //newTask(args);
+                        //return true;
+                        return false;
                     } else {
                         //printf("queue of thread: %d is empty\n", index);
                     }
