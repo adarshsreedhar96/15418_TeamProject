@@ -1,5 +1,5 @@
 //#include "threadpool_centralized.h"
-#include "threadpool_perthread.h"
+#include "threadpool_priority.h"
 //#include "threadpool_test.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -13,7 +13,7 @@ int main()
 {
 
     const int numOfThreads = 2;
-    int numberOfTasks = numOfThreads;
+    int numberOfTasks = 4;
     MatMul matMul;
     MatMul::matrixmul **args;
     int mat1[16] = {
@@ -31,9 +31,10 @@ int main()
     int size = 4;
     args = (MatMul::matrixmul **)malloc(sizeof(MatMul::matrixmul *) * numberOfTasks);
     matMul.setInput(mat1, mat2, 4);
-    matMul.getTasks(args, numOfThreads);
-    threadPool_PerThread threadPool(numOfThreads);
-    threadPool.submit(&MatMul::workerTask, args, numOfThreads);
+    matMul.getTasks(args, numberOfTasks);
+    threadPool_priority threadPool(numOfThreads);
+    int *priorities = (int *)malloc(sizeof(int) * numberOfTasks);
+    threadPool.submit(&MatMul::workerTask, args, priorities, numberOfTasks);
     threadPool.dispatch();
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     for (int i = 0; i < 4; i++)
