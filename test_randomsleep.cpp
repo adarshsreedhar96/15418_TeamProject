@@ -39,7 +39,7 @@ int main()
 
     randomsleep.getTasks(args, numberOfTasks);
     
-    threadPool_PerThread threadPool(numOfThreads);
+    threadPool_PerThread threadPool(numOfThreads, true, STEALALLTASKS);
     threadPool.submit(&RandomSleep::workerTask, args, numberOfTasks);
     auto start_time = std::chrono::high_resolution_clock::now();
     threadPool.dispatch();

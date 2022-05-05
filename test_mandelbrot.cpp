@@ -30,7 +30,7 @@ int main()
 
     mandelbrot.getTasks(args, numberOfTasks);
     
-    threadPool_PerThread threadPool(numOfThreads);
+    threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS);
     threadPool.submit(&Mandelbrot::workerTask, args, numberOfTasks);
     auto start_time = std::chrono::high_resolution_clock::now();
     threadPool.dispatch();

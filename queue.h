@@ -4,6 +4,7 @@
 #include <functional>
 #include <mutex>
 #include "task.h"
+
 using namespace std;
 
 /**
@@ -78,7 +79,7 @@ class Queue{
                 return true;
             }
         }
-        bool steal_task(std::vector<Task>* stolenTasks){
+        bool steal_task(std::vector<Task>* stolenTasks, StealAmount amount){
             const std::lock_guard<std::mutex> lock(*queue_mutex);
             if (tasksWithTaskStruct.empty()){
                 return false;
@@ -87,7 +88,14 @@ class Queue{
             {
                 // steal half the tasks
                 int currentSize = tasksWithTaskStruct.size();
-                int tasksToSteal = currentSize/2;
+                int tasksToSteal = 1; // default number of tasks to steal
+                if (amount == STEALALLTASKS){
+                    tasksToSteal = currentSize;
+                } else if (amount == STEALHALFTASKS) {
+                    tasksToSteal = currentSize/2;
+                } else {
+                    tasksToSteal = 1;
+                }
                 printf("stealing %d tasks\n", tasksToSteal);
                 for(int i=0;i<tasksToSteal;i++){
                     Task dequeuedTask = std::move(tasksWithTaskStruct.front());
