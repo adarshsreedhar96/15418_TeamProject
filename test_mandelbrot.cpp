@@ -19,8 +19,8 @@ int main()
     mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, output_serial);
 
 
-    const int numOfThreads = 2;//std::thread::hardware_concurrency();
-    int numberOfTasks = numOfThreads * 10;
+    const int numOfThreads = std::thread::hardware_concurrency();
+    int numberOfTasks = numOfThreads * 5;
     Mandelbrot mandelbrot;
 
     typedef Mandelbrot::WorkerArgs* WAPtr;
