@@ -81,7 +81,6 @@ class threadPool_PerThread{
             }
         }
         bool stealTasks(int index){
-            printf("came here\n");
             // iterate over the others in a ring manner
             for(int i=index+1;i<num_of_threads;i++){
                 //printf("thread: %d has queue of size: %d\n", i, myQueues[i].getSize(true));

@@ -23,14 +23,15 @@ int main()
     mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, output_serial);
 
 
-    const int numOfThreads = 4;
-    int numberOfTasks = 4;
+    const int numOfThreads = 16;
+    int numberOfTasks = 160;
+    int viewIndex = 1;
     Mandelbrot mandelbrot;
 
     typedef Mandelbrot::WorkerArgs* WAPtr;
     WAPtr* args = (WAPtr*) malloc(sizeof(Mandelbrot::WorkerArgs*)*numberOfTasks);
 
-    mandelbrot.setInput(1, numOfThreads);
+    mandelbrot.setInput(viewIndex, numOfThreads);
 
     mandelbrot.getTasks(args, numberOfTasks);
     #if CENTRALIZED
