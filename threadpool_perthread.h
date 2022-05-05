@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <typeinfo>
 
-#define STEALTASKS 0
+#define STEALTASKS 1
 
 #if STEALTASKS
 #include "queue.h"
@@ -28,6 +28,7 @@ public:
     std::vector<Queue> myQueues;
     bool toSteal = false;
     StealAmount stealAmount;
+    int stealCount = 0;
     // constructor
     threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount)
     {
@@ -130,6 +131,7 @@ public:
                     // void* args = stolenTasks[0].args;
                     while (!stolenTasks.empty())
                     {
+                        stealCount++;
                         Task poppedTask = stolenTasks.back();
                         std::function<void(void *)> newTask = poppedTask.task;
                         void *args = poppedTask.args;
@@ -201,5 +203,6 @@ public:
     {
         breakFlag = true;
         destroy_threads();
+        printf("Number of stolen tasks is %d\n", stealCount);
     }
 };
