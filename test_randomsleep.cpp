@@ -4,6 +4,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <cstdlib>
 
 #define PERTHREAD_QUEUE 1
 #define CENTRALIZED_QUEUE 0
@@ -17,10 +18,10 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char **argv)
 {
-    const int numOfThreads = 16;
-    int numberOfTasks = 80;
+    const int numOfThreads = atoi(argv[1]);
+    int numberOfTasks = atoi(argv[2]);
     RandomSleep randomsleep;
     typedef TaskNumArgs *TNArgs;
     TNArgs *args = (TNArgs *)malloc(sizeof(TaskNumArgs *) * numberOfTasks);

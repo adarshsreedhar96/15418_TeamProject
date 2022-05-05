@@ -9,14 +9,14 @@
 #include <chrono>
 #include <thread>
 #include <string.h>
+#include <cstdlib>
 
 using namespace std;
 
-int main()
+int main(int argc, char **argv)
 {
-
-    const int numOfThreads = 2;
-    int numberOfTasks = 4;
+    const int numOfThreads = atoi(argv[1]);
+    int numberOfTasks = atoi(argv[2]);
     Search searchObj;
     Search::search **args;
     std::string text = "I am a test string and I don't know what I am doing cause CMU is killing me and I am dead inside and this is a ridiculous test";

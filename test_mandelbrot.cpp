@@ -4,6 +4,8 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <cstdlib>
+
 using namespace std;
 
 #define CENTRALIZED 1
@@ -14,16 +16,16 @@ using namespace std;
 #include "threadpool_perthread.h"
 #endif
 
-int main()
+int main(int argc, char **argv)
 {
+    const int numOfThreads = atoi(argv[1]);
+    int numberOfTasks = atoi(argv[2]);
     scaleAndShift(x0, x1, y0, y1, scaleValue, shiftX, shiftY);
 
     // run serial
     memset(output_serial, 0, width * height * sizeof(int));
     mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, output_serial);
 
-    const int numOfThreads = 16;
-    int numberOfTasks = 160;
     int viewIndex = 1;
     Mandelbrot mandelbrot;
 

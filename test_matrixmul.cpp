@@ -4,6 +4,8 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <cstdlib>
+
 using namespace std;
 
 #define CENTRALIZED 0
@@ -14,11 +16,10 @@ using namespace std;
 #include "threadpool_perthread.h"
 #endif
 
-int main()
+int main(int argc, char **argv)
 {
-
-    const int numOfThreads = 8;
-    int numberOfTasks = 100;
+    const int numOfThreads = atoi(argv[1]);
+    int numberOfTasks = atoi(argv[2]);
 
     MatMul matMul;
     MatMul::matrixmul **args;
@@ -40,7 +41,7 @@ int main()
 #if CENTRALIZED
     threadPool threadPool(numOfThreads);
 #else
-    threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS);
+    threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS, STEALRANDOMTASK);
 #endif
     // int *priorities = (int *)malloc(sizeof(int) * numberOfTasks);
     // threadPool.submit(&MatMul::workerTask, args, priorities, numberOfTasks);
