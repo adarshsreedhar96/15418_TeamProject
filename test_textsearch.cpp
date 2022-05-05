@@ -10,6 +10,7 @@
 #include <thread>
 #include <string.h>
 #include <cstdlib>
+#include "random.h"
 
 using namespace std;
 
@@ -19,11 +20,11 @@ int main(int argc, char **argv)
     int numberOfTasks = atoi(argv[2]);
     Search searchObj;
     Search::search **args;
-    std::string text = "I am a test string and I don't know what I am doing cause CMU is killing me and I am dead inside and this is a ridiculous test";
+    std::string text = txt;
 
     args = (Search::search **)malloc(sizeof(Search::search *) * numberOfTasks);
     printf("Setting input\n");
-    searchObj.setInput(text, "string");
+    searchObj.setInput(text, "Betty");
     printf("Getting tasks\n");
     searchObj.getTasks(args, numberOfTasks);
     bool result;
@@ -37,7 +38,10 @@ int main(int argc, char **argv)
     int *priority = searchObj.getPriority(numberOfTasks, 4, sectionpriority);
     printf("Submitting tasks\n");
     threadPool.submit(&Search::workerTask, args, priority, numberOfTasks);
+    auto start_time = std::chrono::high_resolution_clock::now();
     threadPool.dispatch();
     threadPool.clearTasks();
+    auto end_time = std::chrono::high_resolution_clock::now();
+    printf("time diff: %f\n", std::chrono::duration<double, std::milli>(end_time - start_time).count());
     printf("was i found? %d\n", result);
 }
