@@ -3,6 +3,7 @@
 #include "priorityq.h"
 #include <atomic>
 #include <stdlib.h>
+#include <typeinfo>
 
 using namespace std;
 class threadPool_priority
@@ -10,8 +11,8 @@ class threadPool_priority
 private:
 public:
     uint32_t num_of_threads;
-    std::atomic<bool> runningFlag = {false};
-    std::atomic<bool> breakFlag = {false};
+    std::atomic_bool runningFlag = ATOMIC_VAR_INIT(false);
+    std::atomic_bool breakFlag = ATOMIC_VAR_INIT(false);
     std::vector<std::thread> myThreads;
     bool *result;
 
@@ -89,7 +90,7 @@ public:
         runningFlag = true;
     }
     // this dtor waits for all threads to join
-    ~threadPool_priority()
+    void clearTasks()
     {
         breakFlag = true;
         destroy_threads();

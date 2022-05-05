@@ -23,7 +23,7 @@ int main()
 
     args = (Search::search **)malloc(sizeof(Search::search *) * numberOfTasks);
     printf("Setting input\n");
-    searchObj.setInput(text, "ridiculous");
+    searchObj.setInput(text, "string");
     printf("Getting tasks\n");
     searchObj.getTasks(args, numberOfTasks);
     bool result;
@@ -38,6 +38,6 @@ int main()
     printf("Submitting tasks\n");
     threadPool.submit(&Search::workerTask, args, priority, numberOfTasks);
     threadPool.dispatch();
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    threadPool.clearTasks();
     printf("was i found? %d\n", result);
 }
