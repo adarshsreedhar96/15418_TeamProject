@@ -3,7 +3,7 @@
 #include <vector>
 
 using namespace std;
-class Search : Benchmark
+class Search
 {
 
 private:
@@ -47,7 +47,7 @@ public:
         tokenizedText.push_back(s.substr(start, end - start));
     }
 
-    static void workerTask(void *threadArgs)
+    static bool workerTask(void *threadArgs)
     {
         printf("workerThreadStart called by thread: %d\n", std::this_thread::get_id());
 
@@ -58,9 +58,10 @@ public:
             if (args->text[i] == args->target)
             {
                 args->found = true;
-                return;
+                return true;
             }
         }
+        return false;
     }
     template <typename T>
     void getTasks(T **args, int numberOfTasks)
@@ -73,8 +74,21 @@ public:
             args[i]->target = this->target;
             args[i]->start_idx = i * (size / numberOfTasks);
             args[i]->end_idx = (i + 1) * (size / numberOfTasks);
-            printf("setting  %d to %d\n", args[i]->start_idx, args[i]->end_idx);
         }
         args[numberOfTasks - 1]->end_idx = size;
+    }
+
+    int *getPriority(int numberOfTasks, int numberOfSections, int *sectionPriority)
+    {
+        int *priority = (int *)malloc(sizeof(int) * numberOfTasks);
+
+        int section = -1;
+        for (int i = 0; i < numberOfTasks; i++)
+        {
+            if (numberOfTasks % numberOfSections == 0)
+                section++;
+            priority[i] = sectionPriority[section];
+        }
+        return priority;
     }
 };

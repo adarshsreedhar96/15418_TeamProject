@@ -26,16 +26,18 @@ int main()
     searchObj.setInput(text, "ridiculous");
     printf("Getting tasks\n");
     searchObj.getTasks(args, numberOfTasks);
-    threadPool_priority threadPool(numOfThreads, &Search::workerTask);
+    bool result;
+    threadPool_priority threadPool(numOfThreads, &Search::workerTask, &result);
     // threadPool_PerThread threadPool(numOfThreads);
-    int *priority = (int *)malloc(sizeof(int) * numberOfTasks);
-    priority[0] = 10;
-    priority[1] = 9;
-    priority[2] = 8;
-    priority[3] = 7;
+    int *sectionpriority = (int *)malloc(sizeof(int) * numberOfTasks);
+    sectionpriority[0] = 1;
+    sectionpriority[1] = 2;
+    sectionpriority[2] = 3;
+    sectionpriority[3] = 4;
+    int *priority = searchObj.getPriority(numberOfTasks, 4, sectionpriority);
     printf("Submitting tasks\n");
     threadPool.submit(&Search::workerTask, args, priority, numberOfTasks);
     threadPool.dispatch();
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-    printf("was i found? %d\n", args[3]->found);
+    printf("was i found? %d\n", result);
 }
