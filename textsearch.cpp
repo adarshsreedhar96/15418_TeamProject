@@ -52,7 +52,7 @@ public:
         // printf("workerThreadStart called by thread: %d\n", std::this_thread::get_id());
 
         search *args = static_cast<search *>(threadArgs);
-        // printf("working on %d to %d\n", args->start_idx, args->end_idx);
+        printf("working on %d to %d\n", args->start_idx, args->end_idx);
         for (int i = args->start_idx; i < args->end_idx; i++)
         {
             if (args->text[i] == args->target)

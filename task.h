@@ -1,17 +1,20 @@
 #include <functional>
 
-enum StealAmount {
-    STEALONETASK=0,
+enum StealAmount
+{
+    STEALONETASK = 0,
     STEALALLTASKS,
-    STEALHALFTASKS 
+    STEALHALFTASKS
 } StealAmountType_t;
 
-enum StealType {
-    STEALRANDOMTASK=0,
+enum StealType
+{
+    STEALRANDOMTASK = 0,
     STEALNEIGHBOURTASK
 } StealType_t;
 
-typedef struct {
-    const std::function<void(void*)> &task;
+typedef struct
+{
+    const std::function<bool(void *)> &task;
     void *args;
 } Task;

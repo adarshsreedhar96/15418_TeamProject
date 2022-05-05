@@ -1,6 +1,6 @@
 //#include "threadpool_centralized.h"
-// #include "threadpool_perthread.h"
-#include "threadpool_priority.h"
+#include "threadpool_perthread.h"
+// #include "threadpool_priority.h"
 // #include "threadpool_test.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -24,12 +24,12 @@ int main(int argc, char **argv)
 
     args = (Search::search **)malloc(sizeof(Search::search *) * numberOfTasks);
     printf("Setting input\n");
-    searchObj.setInput(text, "Betty");
+    searchObj.setInput(text, "scary");
     printf("Getting tasks\n");
     searchObj.getTasks(args, numberOfTasks);
     bool result;
-    threadPool_priority threadPool(numOfThreads, &Search::workerTask, &result);
-    // threadPool_PerThread threadPool(numOfThreads);
+    // threadPool_priority threadPool(numOfThreads, &Search::workerTask, &result);
+    // threadPool_PerThread threadPool(numOfThreads, false, STEALALLTASKS, STEALRANDOMTASK);
     int *sectionpriority = (int *)malloc(sizeof(int) * numberOfTasks);
     sectionpriority[0] = 1;
     sectionpriority[1] = 2;
@@ -37,7 +37,8 @@ int main(int argc, char **argv)
     sectionpriority[3] = 4;
     int *priority = searchObj.getPriority(numberOfTasks, 4, sectionpriority);
     printf("Submitting tasks\n");
-    threadPool.submit(&Search::workerTask, args, priority, numberOfTasks);
+    threadPool_PerThread threadPool(numOfThreads, false, STEALALLTASKS, STEALRANDOMTASK, &result);
+    threadPool.submit(&Search::workerTask, args, numberOfTasks);
     auto start_time = std::chrono::high_resolution_clock::now();
     threadPool.dispatch();
     threadPool.clearTasks();

@@ -42,7 +42,7 @@ public:
         }
     }
     // push_task with arguments
-    void push_task(const std::function<void(void *)> &task, void *args)
+    void push_task(const std::function<bool(void *)> &task, void *args)
     {
         {
             // const std::scoped_lock lock(queue_mutex);
@@ -64,7 +64,7 @@ public:
             return true;
         }
     }
-    bool pop_task(std::function<void(void *)> &task, void **args)
+    bool pop_task(std::function<bool(void *)> &task, void **args)
     {
         const std::lock_guard<std::mutex> lock(*queue_mutex);
         if (tasksWithTaskStruct.empty())
@@ -129,6 +129,14 @@ public:
         else
         {
             return tasks.size();
+        }
+    }
+    void drain_queue()
+    {
+        const std::lock_guard<std::mutex> lock(*queue_mutex);
+        while (!tasksWithTaskStruct.empty())
+        {
+            tasksWithTaskStruct.pop();
         }
     }
 };

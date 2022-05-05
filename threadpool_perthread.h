@@ -2,7 +2,7 @@
  * Here, we create a pool of threads, each of which gets its own queue for pushing tasks.
  * In the submit method, we then distribute the tasks in round-robin fashion across the threads. Future improvements can include
  * taking a custom function from the user to distribute the tasks.
- * 
+ *
  * There are several parameters available: Run without Work Stealing, Run with Work Stealing (Different Types and Granularitites of Work to Steal).
  * Refer README.md for more details on how to change them or use them.
  */
@@ -38,13 +38,16 @@ public:
     StealAmount stealAmount;
     StealType stealType;
     int stealCount = 0;
+    bool *result;
     // constructor
-    threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount, StealType stealType)
+    threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount, StealType stealType, bool *resultP)
     {
         this->num_of_threads = numOfThreads;
         this->toSteal = toSteal;
         this->stealAmount = stealAmount;
         this->stealType = stealType;
+
+        result = resultP;
         // create an array of that many threads
         for (int i = 0; i < num_of_threads; i++)
         {
@@ -71,11 +74,18 @@ public:
                 if (isArgumentsPresent)
                 {
                     // grab a task
-                    std::function<void(void *)> newTask;
+                    std::function<bool(void *)> newTask;
                     void *args;
                     if (myQueues[index].pop_task(newTask, &args))
                     {
-                        newTask(args);
+                        if (newTask(args) || *result)
+                        {
+
+                            // drain queue
+                            *result = true;
+                            myQueues[index].drain_queue();
+                            breakFlag = true;
+                        }
                     }
                     else
                     {
@@ -119,7 +129,8 @@ public:
     }
     bool stealTasks(int index)
     {
-        if(this->stealType == STEALNEIGHBOURTASK) {
+        if (this->stealType == STEALNEIGHBOURTASK)
+        {
             // iterate over the others in a ring manner
             for (int i = index + 1; i < num_of_threads; i++)
             {
@@ -136,7 +147,7 @@ public:
                         {
                             stealCount++;
                             Task poppedTask = stolenTasks.back();
-                            std::function<void(void *)> newTask = poppedTask.task;
+                            std::function<bool(void *)> newTask = poppedTask.task;
                             void *args = poppedTask.args;
                             newTask(args);
                             stolenTasks.pop_back();
@@ -166,16 +177,18 @@ public:
             }
             return false;
         }
-        else if (this->stealType == STEALRANDOMTASK) {
+        else if (this->stealType == STEALRANDOMTASK)
+        {
             std::random_device device;
             std::mt19937 randomNumberGenerator(device());
-            std::uniform_int_distribution<std::mt19937::result_type> distCurrentSize(0, this->num_of_threads-1);
+            std::uniform_int_distribution<std::mt19937::result_type> distCurrentSize(0, this->num_of_threads - 1);
             int randomlyChosenIndex = distCurrentSize(randomNumberGenerator);
             // make sure that when we randomly choose an index, it is not the same index
-            while(randomlyChosenIndex == index){
+            while (randomlyChosenIndex == index)
+            {
                 randomlyChosenIndex = distCurrentSize(randomNumberGenerator);
             }
-            //printf("rsndomly stealing from thread%d\n",randomlyChosenIndex);
+            // printf("rsndomly stealing from thread%d\n",randomlyChosenIndex);
             if (isArgumentsPresent)
             {
                 // create an array of Tasks
@@ -188,18 +201,22 @@ public:
                     {
                         stealCount++;
                         Task poppedTask = stolenTasks.back();
-                        std::function<void(void *)> newTask = poppedTask.task;
+                        std::function<bool(void *)> newTask = poppedTask.task;
                         void *args = poppedTask.args;
                         newTask(args);
                         stolenTasks.pop_back();
                     }
                     return false;
-                } else {
+                }
+                else
+                {
                     // the queue that we randomly tried to steal from was already empty!
                     // exit for now, but as a future scope, we can keep attempting to steal until we get a task
                     return false;
                 }
-            } else {
+            }
+            else
+            {
                 std::function<void()> newTask;
                 if (myQueues[randomlyChosenIndex].pop_task(newTask))
                 {
@@ -214,7 +231,9 @@ public:
                     return false;
                 }
             }
-        } else {
+        }
+        else
+        {
             printf("invalid steal type given, skipping\n");
             return false;
         }
@@ -237,7 +256,7 @@ public:
         }
     }
     template <typename T>
-    void submit(const std::function<void(void *)> &task, T **args, int numberOfTasks)
+    void submit(const std::function<bool(void *)> &task, T **args, int numberOfTasks)
     {
         isArgumentsPresent = true;
         // how do we get to know the size?

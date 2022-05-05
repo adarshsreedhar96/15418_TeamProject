@@ -91,4 +91,11 @@ public:
             return tasks.size();
         }
     }
+    void drain_queue()
+    {
+        while (!tasks.empty())
+        {
+            tasks.pop();
+        }
+    }
 };
