@@ -24,9 +24,9 @@ class threadPool_PerThread{
         StealAmount stealAmount;
         // constructor
         threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount){
-            num_of_threads = numOfThreads;
-            toSteal = toSteal;
-            stealAmount = stealAmount;
+            this->num_of_threads = numOfThreads;
+            this->toSteal = toSteal;
+            this->stealAmount = stealAmount;
             // create an array of that many threads
             for(int i=0;i<num_of_threads;i++){
                 // create a new queue instance
@@ -81,6 +81,7 @@ class threadPool_PerThread{
             }
         }
         bool stealTasks(int index){
+            printf("came here\n");
             // iterate over the others in a ring manner
             for(int i=index+1;i<num_of_threads;i++){
                 //printf("thread: %d has queue of size: %d\n", i, myQueues[i].getSize(true));
@@ -91,7 +92,7 @@ class threadPool_PerThread{
                     //std::function<void(void*)> newTask;
                     void* args;
                     //if (myQueues[i].pop_task(newTask, &args)){
-                    StealAmount stealAmount = STEALALLTASKS;
+                    //StealAmount stealAmount = STEALALLTASKS;
                     if (myQueues[i].steal_task(&stolenTasks, stealAmount)){
                         // we found a task! Lets steal it
                         //printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
