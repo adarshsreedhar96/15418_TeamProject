@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <thread>
+#include <functional>
 
 using namespace std;
 

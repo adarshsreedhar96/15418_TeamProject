@@ -6,7 +6,7 @@
 #include <thread>
 using namespace std;
 
-#define CENTRALIZED 0
+#define CENTRALIZED 1
 
 #if CENTRALIZED
 #include "threadpool_centralized.h"
@@ -45,16 +45,18 @@ int main()
     // int *priorities = (int *)malloc(sizeof(int) * numberOfTasks);
     // threadPool.submit(&MatMul::workerTask, args, priorities, numberOfTasks);
     threadPool.submit(&MatMul::workerTask, args, numberOfTasks);
+    auto start_time = std::chrono::high_resolution_clock::now();
     threadPool.dispatch();
     threadPool.clearTasks();
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-    for (int i = 0; i < size; i++)
-    {
-        for (int j = 0; j < size; j++)
-        {
-            int *temp = args[0]->output + ((i)*args[0]->size) + j;
-            printf("%d ", *temp);
-        }
-        printf("\n");
-    }
+    auto end_time = std::chrono::high_resolution_clock::now();
+    printf("time diff: %d\n", std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count());
+    // for (int i = 0; i < size; i++)
+    // {
+    //     for (int j = 0; j < size; j++)
+    //     {
+    //         int *temp = args[0]->output + ((i)*args[0]->size) + j;
+    //         printf("%d ", *temp);
+    //     }
+    //     printf("\n");
+    // }
 }
