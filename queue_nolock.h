@@ -76,40 +76,6 @@ public:
             return true;
         }
     }
-    bool steal_task(std::vector<Task> *stolenTasks, StealAmount amount)
-    {
-        if (tasksWithTaskStruct.empty())
-        {
-            return false;
-        }
-        else
-        {
-            // steal half the tasks
-            int currentSize = tasksWithTaskStruct.size();
-            int tasksToSteal = 1; // default number of tasks to steal
-            if (amount == STEALALLTASKS)
-            {
-                tasksToSteal = currentSize;
-            }
-            else if (amount == STEALHALFTASKS)
-            {
-                tasksToSteal = currentSize / 2;
-            }
-            else
-            {
-                tasksToSteal = 1;
-            }
-            for (int i = 0; i < tasksToSteal; i++)
-            {
-                Task dequeuedTask = std::move(tasksWithTaskStruct.front());
-                tasksWithTaskStruct.pop();
-                stolenTasks->push_back(dequeuedTask);
-            }
-            // task = dequeuedTask.task;
-            //*args = dequeuedTask.args;
-            return true;
-        }
-    }
     bool isEmpty()
     {
         return tasks.empty();

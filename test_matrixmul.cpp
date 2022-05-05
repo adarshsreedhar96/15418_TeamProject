@@ -6,7 +6,7 @@
 #include <thread>
 using namespace std;
 
-#define CENTRALIZED 1
+#define CENTRALIZED 0
 
 #if CENTRALIZED
 #include "threadpool_centralized.h"
