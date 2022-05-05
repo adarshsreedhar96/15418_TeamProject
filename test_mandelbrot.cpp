@@ -1,7 +1,3 @@
-//#include "threadpool_centralized.h"
-//#include "threadpool_priority.h"
-//#include "threadpool_test.h"
-#include "threadpool_perthread.h"
 #include <stdio.h>
 #include <unistd.h>
 #include "mandelbrot.cpp"
@@ -9,6 +5,14 @@
 #include <chrono>
 #include <thread>
 using namespace std;
+
+#define CENTRALIZED 0
+
+#if CENTRALIZED
+#include "threadpool_centralized.h"
+#else
+#include "threadpool_perthread.h"
+#endif
 
 int main()
 {
@@ -19,18 +23,22 @@ int main()
     mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, output_serial);
 
 
-    const int numOfThreads = std::thread::hardware_concurrency();
-    int numberOfTasks = numOfThreads * 5;
+    const int numOfThreads = 16;
+    int numberOfTasks = 160;
+    int viewIndex = 1;
     Mandelbrot mandelbrot;
 
     typedef Mandelbrot::WorkerArgs* WAPtr;
     WAPtr* args = (WAPtr*) malloc(sizeof(Mandelbrot::WorkerArgs*)*numberOfTasks);
 
-    mandelbrot.setInput(6, numOfThreads);
+    mandelbrot.setInput(viewIndex, numOfThreads);
 
     mandelbrot.getTasks(args, numberOfTasks);
-    
-    threadPool_PerThread threadPool(numOfThreads);
+    #if CENTRALIZED
+    threadPool threadPool(numOfThreads);
+    #else
+    threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS);
+    #endif
     threadPool.submit(&Mandelbrot::workerTask, args, numberOfTasks);
     auto start_time = std::chrono::high_resolution_clock::now();
     threadPool.dispatch();

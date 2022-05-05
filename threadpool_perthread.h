@@ -20,9 +20,13 @@ class threadPool_PerThread{
         std::atomic_bool isArgumentsPresent = ATOMIC_VAR_INIT(false);
         std::vector<std::thread> myThreads;
         std::vector<Queue> myQueues;
+        bool toSteal = false;
+        StealAmount stealAmount;
         // constructor
-        threadPool_PerThread(int numOfThreads){
-            num_of_threads = numOfThreads;
+        threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount){
+            this->num_of_threads = numOfThreads;
+            this->toSteal = toSteal;
+            this->stealAmount = stealAmount;
             // create an array of that many threads
             for(int i=0;i<num_of_threads;i++){
                 // create a new queue instance
@@ -50,12 +54,10 @@ class threadPool_PerThread{
                         } else {
                             // this means there are no entries in the queue.
                             // Attempt to steal tasks
-                            #if STEALTASKS
-                            if((!stealTasks(index)) && breakFlag){
-                            #else
-                            if(breakFlag){
-                            #endif
-                                break;
+                            if(toSteal && (!stealTasks(index)) && breakFlag) {
+                                    break;
+                            } else if(breakFlag) {
+                                    break;
                             }
                             //printf("size of queue for thread: %d is %d\n", index, myQueues[index].getSize(true));
                         }
@@ -68,12 +70,10 @@ class threadPool_PerThread{
                         } else {
                             // this means there are no entries in the queue.
                             // Attempt to steal tasks
-                            #if STEALTASKS
-                            if((!stealTasks(index)) && breakFlag){
-                            #else
-                            if(breakFlag){
-                            #endif
-                                break;
+                            if(toSteal && (!stealTasks(index)) && breakFlag) {
+                                    break;
+                            } else if(breakFlag) {
+                                    break;
                             }
                         }
                     }
@@ -91,7 +91,8 @@ class threadPool_PerThread{
                     //std::function<void(void*)> newTask;
                     void* args;
                     //if (myQueues[i].pop_task(newTask, &args)){
-                    if (myQueues[i].steal_task(&stolenTasks)){
+                    //StealAmount stealAmount = STEALALLTASKS;
+                    if (myQueues[i].steal_task(&stolenTasks, stealAmount)){
                         // we found a task! Lets steal it
                         //printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
                         //printf("size of vector: %d\n", stolenTasks.size());
@@ -131,7 +132,6 @@ class threadPool_PerThread{
                 myThreads[i].join();
             }
         }
-        
         void submit(const std::function<void()> &task, int numberOfTasks){
             isArgumentsPresent = false;
             // put tasks onto each queue
@@ -140,7 +140,6 @@ class threadPool_PerThread{
                 myQueues[i%num_of_threads].push_task(task);
             }
         }
-        
         template <typename T>
         void submit(const std::function<void(void*)> &task, T** args, int numberOfTasks){
             isArgumentsPresent = true;

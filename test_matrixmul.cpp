@@ -32,9 +32,9 @@ int main()
     args = (MatMul::matrixmul **)malloc(sizeof(MatMul::matrixmul *) * numberOfTasks);
     matMul.setInput(mat1, mat2, size);
     matMul.getTasks(args, numberOfTasks);
-    threadPool_PerThread threadPool(numOfThreads);
-    // int *priorities = (int *)malloc(sizeof(int) * numberOfTasks);
-    // threadPool.submit(&MatMul::workerTask, args, priorities, numberOfTasks);
+    threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS);
+    //int *priorities = (int *)malloc(sizeof(int) * numberOfTasks);
+    //threadPool.submit(&MatMul::workerTask, args, priorities, numberOfTasks);
     threadPool.submit(&MatMul::workerTask, args, numberOfTasks);
     threadPool.dispatch();
     threadPool.clearTasks();
