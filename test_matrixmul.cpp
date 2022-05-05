@@ -1,7 +1,3 @@
-//#include "threadpool_centralized.h"
-//#include "threadpool_priority.h"
-#include "threadpool_perthread.h"
-//#include "threadpool_test.h"
 #include <stdio.h>
 #include <unistd.h>
 #include "matrixmul.cpp"
@@ -10,11 +6,20 @@
 #include <thread>
 using namespace std;
 
+#define CENTRALIZED 0
+
+#if CENTRALIZED
+#include "threadpool_centralized.h"
+#else
+#include "threadpool_perthread.h"
+#endif
+
 int main()
 {
 
     const int numOfThreads = 8;
     int numberOfTasks = 100;
+
     MatMul matMul;
     MatMul::matrixmul **args;
     int size = 500;
@@ -32,9 +37,13 @@ int main()
     args = (MatMul::matrixmul **)malloc(sizeof(MatMul::matrixmul *) * numberOfTasks);
     matMul.setInput(mat1, mat2, size);
     matMul.getTasks(args, numberOfTasks);
+#if CENTRALIZED
+    threadPool threadPool(numOfThreads);
+#else
     threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS);
-    //int *priorities = (int *)malloc(sizeof(int) * numberOfTasks);
-    //threadPool.submit(&MatMul::workerTask, args, priorities, numberOfTasks);
+#endif
+    // int *priorities = (int *)malloc(sizeof(int) * numberOfTasks);
+    // threadPool.submit(&MatMul::workerTask, args, priorities, numberOfTasks);
     threadPool.submit(&MatMul::workerTask, args, numberOfTasks);
     threadPool.dispatch();
     threadPool.clearTasks();
