@@ -8,11 +8,11 @@
 #include <cstdlib>
 #include "random.h"
 
-#define PERTHREAD_QUEUE 1
-#define CENTRALIZED_QUEUE 0
+#define PERTHREAD_QUEUE 0
+#define PRIORITY_QUEUE 1
 
-#if CENTRALIZED_QUEUE
-#include "threadpool_centralized.h"
+#if PRIORITY_QUEUE
+#include "threadpool_priority.h"
 #endif
 #if PERTHREAD_QUEUE
 #include "threadpool_perthread.h"
@@ -42,9 +42,9 @@ int main(int argc, char **argv)
     }
     int *priority = searchObj.getPriority(numberOfTasks, 4, sectionpriority);
     printf("Submitting tasks\n");
-#if CENTRALIZED_QUEUE
-    threadPool threadPool(numOfThreads);
-    threadPool.submit(&Search::workerTask, args, numberOfTasks);
+#if PRIORITY_QUEUE
+    threadPool_priority threadPool(numOfThreads, &Search::workerTask, &result);
+    threadPool.submit(&Search::workerTask, args, priority, numberOfTasks);
 #endif
 #if PERTHREAD_QUEUE
     threadPool_PerThread threadPool(numOfThreads, false, STEALALLTASKS, STEALRANDOMTASK, &result);
