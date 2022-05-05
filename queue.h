@@ -23,8 +23,6 @@ private:
      * @brief A mutex to synchronize access to the task queue
      * by different threads.
      */
-    // why is it mutable though
-    // mutable std::mutex queue_mutex = {};
     std::mutex *queue_mutex;
     // methods
 public:

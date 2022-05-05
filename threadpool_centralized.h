@@ -1,3 +1,12 @@
+/**
+ * This implements a single queue where all tasks are put, and creates a threadpool all of whcih attempt to
+ * grab tasks from the same queue. We introduce locks to avoid contention.
+ * The way the threads work is that at creation, they run a busy-wait loop. After we put all the tasks in the
+ * queue, we then set a flag, runningFlag to true (dispatch function), after which the threads begin to pop tasks from the queue.
+ * Once threads find no more tasks to pop, they then check if they need to exit the loop. This option is given so that
+ * the user can add more tasks necessary at runtime. Once the breakFlag is set to true (in the clearTasks function),
+ * the threads slowly exit their work() methods, and since join() is called, eventually terminate.
+ */
 #include<stdio.h>
 #include<thread>
 #include "queue.h"
@@ -9,11 +18,17 @@ class threadPool{
     private:
 
     public:
+        // set in ctor
         uint32_t num_of_threads;
+        // whether the threads running worker() need to start popping tasks
         std::atomic_bool runningFlag = ATOMIC_VAR_INIT(false);
+        // whether the threads running worker() need to exit the loop
         std::atomic_bool breakFlag   = ATOMIC_VAR_INIT(false);
+        // whether the threads running 
         std::atomic_bool isArgumentsPresent = ATOMIC_VAR_INIT(false);
+        // stores all thread objects.
         std::vector<std::thread> myThreads;
+        // creates the queue type.
         Queue queue;
         // constructor
         threadPool(int numOfThreads){
@@ -27,6 +42,13 @@ class threadPool{
                 myThreads.push_back(std::thread(&threadPool::worker, this, i));
             }
         }
+        // main logic of each thread, runs this after its spawned.
+        // this is a busy-wait loop, and it enters depending on value of runningFlag
+        // the index parameter is the thread_id
+        // isArguments present is a flag to check whether the tasks to be exeucted require
+        // arguments or not
+        // as mentioned above, each thread attempts to pop tasks and then run them
+        // once queue returns empty, then we break the loop and exit function, depending on value of breakFlag
         void worker(int index){
             printf("worker() called with thread_id: %d\n", index);
             while(true){
@@ -94,7 +116,7 @@ class threadPool{
         void dispatch(){
             runningFlag = true;
         }
-        // this dtor waits for all threads to join
+        // this clear waits for all threads to join
         void clearTasks(){
             breakFlag = true;
             destroy_threads();

@@ -1,8 +1,15 @@
+/**
+ * Here, we create a pool of threads, each of which gets its own queue for pushing tasks.
+ * In the submit method, we then distribute the tasks in round-robin fashion across the threads. Future improvements can include
+ * taking a custom function from the user to distribute the tasks.
+ * 
+ * There are several parameters available: Run without Work Stealing, Run with Work Stealing (Different Types and Granularitites of Work to Steal).
+ * Refer README.md for more details on how to change them or use them.
+ */
 #include <stdio.h>
 #include <thread>
 #include <iostream>
 
-//#include "task.h"
 #include <atomic>
 #include <stdlib.h>
 #include <typeinfo>
@@ -122,17 +129,9 @@ public:
                     // create an array of Tasks
                     std::vector<Task> stolenTasks;
                     // grab a task
-                    // std::function<void(void*)> newTask;
-                    void *args;
-                    // if (myQueues[i].pop_task(newTask, &args)){
-                    // StealAmount stealAmount = STEALALLTASKS;
                     if (myQueues[i].steal_task(&stolenTasks, stealAmount))
                     {
                         // we found a task! Lets steal it
-                        // printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
-                        // printf("size of vector: %d\n", stolenTasks.size());
-                        // std::function<void(void*)> newTask = stolenTasks[0].task;
-                        // void* args = stolenTasks[0].args;
                         while (!stolenTasks.empty())
                         {
                             stealCount++;
@@ -142,8 +141,6 @@ public:
                             newTask(args);
                             stolenTasks.pop_back();
                         }
-                        // newTask(args);
-                        // return true;
                         return false;
                     }
                     else
