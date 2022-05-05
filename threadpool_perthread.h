@@ -6,6 +6,7 @@
 #include <atomic>
 #include <stdlib.h>
 #include <typeinfo>
+#include <random>
 
 #define STEALTASKS 1
 
@@ -28,13 +29,15 @@ public:
     std::vector<Queue> myQueues;
     bool toSteal = false;
     StealAmount stealAmount;
+    StealType stealType;
     int stealCount = 0;
     // constructor
-    threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount)
+    threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount, StealType stealType)
     {
         this->num_of_threads = numOfThreads;
         this->toSteal = toSteal;
         this->stealAmount = stealAmount;
+        this->stealType = stealType;
         // create an array of that many threads
         for (int i = 0; i < num_of_threads; i++)
         {
@@ -109,26 +112,81 @@ public:
     }
     bool stealTasks(int index)
     {
-        // iterate over the others in a ring manner
-        for (int i = index + 1; i < num_of_threads; i++)
-        {
-            // printf("thread: %d has queue of size: %d\n", i, myQueues[i].getSize(true));
+        if(this->stealType == STEALNEIGHBOURTASK) {
+            // iterate over the others in a ring manner
+            for (int i = index + 1; i < num_of_threads; i++)
+            {
+                // printf("thread: %d has queue of size: %d\n", i, myQueues[i].getSize(true));
+                if (isArgumentsPresent)
+                {
+                    // create an array of Tasks
+                    std::vector<Task> stolenTasks;
+                    // grab a task
+                    // std::function<void(void*)> newTask;
+                    void *args;
+                    // if (myQueues[i].pop_task(newTask, &args)){
+                    // StealAmount stealAmount = STEALALLTASKS;
+                    if (myQueues[i].steal_task(&stolenTasks, stealAmount))
+                    {
+                        // we found a task! Lets steal it
+                        // printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
+                        // printf("size of vector: %d\n", stolenTasks.size());
+                        // std::function<void(void*)> newTask = stolenTasks[0].task;
+                        // void* args = stolenTasks[0].args;
+                        while (!stolenTasks.empty())
+                        {
+                            stealCount++;
+                            Task poppedTask = stolenTasks.back();
+                            std::function<void(void *)> newTask = poppedTask.task;
+                            void *args = poppedTask.args;
+                            newTask(args);
+                            stolenTasks.pop_back();
+                        }
+                        // newTask(args);
+                        // return true;
+                        return false;
+                    }
+                    else
+                    {
+                        // printf("queue of thread: %d is empty\n", index);
+                    }
+                }
+                else
+                {
+                    std::function<void()> newTask;
+                    if (myQueues[i].pop_task(newTask))
+                    {
+                        // we found a task! Lets steal it
+                        // printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
+                        myQueues[index].push_task(newTask);
+                        return true;
+                    }
+                    else
+                    {
+                        // printf("queue of thread: %d is empty\n", index);
+                    }
+                }
+            }
+            return false;
+        }
+        else if (this->stealType == STEALRANDOMTASK) {
+            std::random_device device;
+            std::mt19937 randomNumberGenerator(device());
+            std::uniform_int_distribution<std::mt19937::result_type> distCurrentSize(0, this->num_of_threads-1);
+            int randomlyChosenIndex = distCurrentSize(randomNumberGenerator);
+            // make sure that when we randomly choose an index, it is not the same index
+            while(randomlyChosenIndex == index){
+                randomlyChosenIndex = distCurrentSize(randomNumberGenerator);
+            }
+            //printf("rsndomly stealing from thread%d\n",randomlyChosenIndex);
             if (isArgumentsPresent)
             {
                 // create an array of Tasks
                 std::vector<Task> stolenTasks;
                 // grab a task
-                // std::function<void(void*)> newTask;
                 void *args;
-                // if (myQueues[i].pop_task(newTask, &args)){
-                // StealAmount stealAmount = STEALALLTASKS;
-                if (myQueues[i].steal_task(&stolenTasks, stealAmount))
+                if (myQueues[randomlyChosenIndex].steal_task(&stolenTasks, stealAmount))
                 {
-                    // we found a task! Lets steal it
-                    // printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
-                    // printf("size of vector: %d\n", stolenTasks.size());
-                    // std::function<void(void*)> newTask = stolenTasks[0].task;
-                    // void* args = stolenTasks[0].args;
                     while (!stolenTasks.empty())
                     {
                         stealCount++;
@@ -138,32 +196,31 @@ public:
                         newTask(args);
                         stolenTasks.pop_back();
                     }
-                    // newTask(args);
-                    // return true;
+                    return false;
+                } else {
+                    // the queue that we randomly tried to steal from was already empty!
+                    // exit for now, but as a future scope, we can keep attempting to steal until we get a task
                     return false;
                 }
-                else
-                {
-                    // printf("queue of thread: %d is empty\n", index);
-                }
-            }
-            else
-            {
+            } else {
                 std::function<void()> newTask;
-                if (myQueues[i].pop_task(newTask))
+                if (myQueues[randomlyChosenIndex].pop_task(newTask))
                 {
                     // we found a task! Lets steal it
-                    // printf("stealing task from thread: %d and giving to thread: %d\n", i, index);
-                    myQueues[index].push_task(newTask);
+                    myQueues[randomlyChosenIndex].push_task(newTask);
                     return true;
                 }
                 else
                 {
-                    // printf("queue of thread: %d is empty\n", index);
+                    // the queue that we randomly tried to steal from was already empty!
+                    // exit for now, but as a future scope, we can keep attempting to steal until we get a task
+                    return false;
                 }
             }
+        } else {
+            printf("invalid steal type given, skipping\n");
+            return false;
         }
-        return false;
     }
     void destroy_threads()
     {

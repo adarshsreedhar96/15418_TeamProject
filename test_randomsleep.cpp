@@ -15,26 +15,23 @@
 #include "threadpool_perthread.h"
 #endif
 
-#define WITHOUTARGS 1
-#define WITHARGS 0
-
 using namespace std;
 
 int main()
 {
-    const int numOfThreads = 4;
-    int numberOfTasks = 45;
+    const int numOfThreads = 16;
+    int numberOfTasks = 80;
     RandomSleep randomsleep;
     typedef TaskNumArgs *TNArgs;
     TNArgs *args = (TNArgs *)malloc(sizeof(TaskNumArgs *) * numberOfTasks);
-    randomsleep.setInput(numOfThreads * 5, numOfThreads);
+    randomsleep.setInput(numberOfTasks, numOfThreads);
     randomsleep.getTasks(args, numberOfTasks);
 #if CENTRALIZED_QUEUE
-    threadPool threadPool(num_of_threads);
+    threadPool threadPool(numOfThreads);
     threadPool.submit(&RandomSleep::workerTask, args, numberOfTasks);
 #endif
 #if PERTHREAD_QUEUE
-    threadPool_PerThread threadPool(numOfThreads, true, STEALONETASK);
+    threadPool_PerThread threadPool(numOfThreads, true, STEALALLTASKS, STEALRANDOMTASK);
     threadPool.submit(&RandomSleep::workerTask, args, numberOfTasks);
 #endif
     auto start_time = std::chrono::high_resolution_clock::now();

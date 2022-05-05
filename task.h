@@ -6,6 +6,11 @@ enum StealAmount {
     STEALHALFTASKS 
 } StealAmountType_t;
 
+enum StealType {
+    STEALRANDOMTASK=0,
+    STEALNEIGHBOURTASK
+} StealType_t;
+
 typedef struct {
     const std::function<void(void*)> &task;
     void *args;
