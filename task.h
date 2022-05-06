@@ -15,6 +15,6 @@ enum StealType
 
 typedef struct
 {
-    const std::function<bool(void *)> &task;
+    const std::function<void(void *)> &task;
     void *args;
 } Task;

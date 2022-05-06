@@ -6,8 +6,8 @@
 #include <thread>
 #include <cstdlib>
 
-#define PERTHREAD_QUEUE 1
-#define CENTRALIZED_QUEUE 0
+#define PERTHREAD_QUEUE 0
+#define CENTRALIZED_QUEUE 1
 
 #if CENTRALIZED_QUEUE
 #include "threadpool_centralized.h"

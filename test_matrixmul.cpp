@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define CENTRALIZED 0
+#define CENTRALIZED 1
 
 #if CENTRALIZED
 #include "threadpool_centralized.h"
@@ -43,8 +43,6 @@ int main(int argc, char **argv)
 #else
     threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS, STEALRANDOMTASK);
 #endif
-    // int *priorities = (int *)malloc(sizeof(int) * numberOfTasks);
-    // threadPool.submit(&MatMul::workerTask, args, priorities, numberOfTasks);
     threadPool.submit(&MatMul::workerTask, args, numberOfTasks);
     auto start_time = std::chrono::high_resolution_clock::now();
     threadPool.dispatch();

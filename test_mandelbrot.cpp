@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define CENTRALIZED 1
+#define CENTRALIZED 0
 
 #if CENTRALIZED
 #include "threadpool_centralized.h"
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 #if CENTRALIZED
     threadPool threadPool(numOfThreads);
 #else
-    threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS);
+    threadPool_PerThread threadPool(numOfThreads, true, STEALHALFTASKS, STEALRANDOMTASK);
 #endif
     threadPool.submit(&Mandelbrot::workerTask, args, numberOfTasks);
     auto start_time = std::chrono::high_resolution_clock::now();

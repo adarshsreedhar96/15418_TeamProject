@@ -41,9 +41,7 @@ public:
             {
                 int linear_idx = (args->size * (i)) + j;
                 for (int k = args->start_idx; k < args->end_idx; k++)
-                {
                     args->output[linear_idx] += *(args->mat1 + (args->size * (i) + k)) * *(args->mat2 + (args->size * (k) + j));
-                }
             }
         }
     }

@@ -38,16 +38,14 @@ public:
     StealAmount stealAmount;
     StealType stealType;
     int stealCount = 0;
-    bool *result;
     // constructor
-    threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount, StealType stealType, bool *resultP)
+    threadPool_PerThread(int numOfThreads, bool toSteal, StealAmount stealAmount, StealType stealType)
     {
         this->num_of_threads = numOfThreads;
         this->toSteal = toSteal;
         this->stealAmount = stealAmount;
         this->stealType = stealType;
 
-        result = resultP;
         // create an array of that many threads
         for (int i = 0; i < num_of_threads; i++)
         {
@@ -74,18 +72,11 @@ public:
                 if (isArgumentsPresent)
                 {
                     // grab a task
-                    std::function<bool(void *)> newTask;
+                    std::function<void(void *)> newTask;
                     void *args;
                     if (myQueues[index].pop_task(newTask, &args))
                     {
-                        if (newTask(args) || *result)
-                        {
-
-                            // drain queue
-                            *result = true;
-                            myQueues[index].drain_queue();
-                            breakFlag = true;
-                        }
+                        newTask(args);
                     }
                     else
                     {
@@ -147,7 +138,7 @@ public:
                         {
                             stealCount++;
                             Task poppedTask = stolenTasks.back();
-                            std::function<bool(void *)> newTask = poppedTask.task;
+                            std::function<void(void *)> newTask = poppedTask.task;
                             void *args = poppedTask.args;
                             newTask(args);
                             stolenTasks.pop_back();
@@ -201,7 +192,7 @@ public:
                     {
                         stealCount++;
                         Task poppedTask = stolenTasks.back();
-                        std::function<bool(void *)> newTask = poppedTask.task;
+                        std::function<void(void *)> newTask = poppedTask.task;
                         void *args = poppedTask.args;
                         newTask(args);
                         stolenTasks.pop_back();
@@ -256,7 +247,7 @@ public:
         }
     }
     template <typename T>
-    void submit(const std::function<bool(void *)> &task, T **args, int numberOfTasks)
+    void submit(const std::function<void(void *)> &task, T **args, int numberOfTasks)
     {
         isArgumentsPresent = true;
         // how do we get to know the size?

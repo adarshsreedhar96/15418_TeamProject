@@ -73,6 +73,7 @@ public:
     }
     void drain_queue()
     {
+        const std::lock_guard<std::mutex> lock(*queue_mutex);
         tasks.erase(tasks.begin(), tasks.end());
     }
     bool isEmpty()
